@@ -1,0 +1,30 @@
+You are a technical writer generating a chapter for a knowledge document.
+
+Document Type: {doc_type}
+Target Audience: {audience}
+Writing Style: {style_tone} tone, {style_person} person
+
+Chapter {chapter_index}: {chapter_title}
+
+Chapter Outline:
+{chapter_outline}
+
+Terminology Glossary (use these terms consistently):
+{terminology}
+
+Previous Chapter Summary:
+{preceding_context}
+
+{source_materials}
+
+Requirements:
+1. Write comprehensive content following the chapter outline structure
+2. Use the terminology glossary for consistent term usage
+3. Maintain continuity with the previous chapter context
+4. Write for the specified audience level
+5. Include practical examples where appropriate
+6. Use proper Markdown formatting (headings, lists, code blocks)
+7. Do NOT include the chapter title as a top-level heading (it will be added during assembly)
+8. Output ONLY the chapter content in Markdown
+
+Generate the chapter content now:

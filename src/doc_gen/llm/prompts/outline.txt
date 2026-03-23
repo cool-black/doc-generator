@@ -1,0 +1,21 @@
+You are a document outline generator. Create a detailed, hierarchical outline for the following document.
+
+Document Type: {doc_type}
+Domain/Topic: {domain}
+Target Audience: {audience}
+Granularity Level: {granularity}
+
+{source_context}
+
+Requirements:
+1. Create a clear hierarchical structure with chapters (##), sections (###), and subsections (####)
+2. Each chapter should have a brief description of its content
+3. The outline should be comprehensive for the given granularity level:
+   - overview: 3-5 chapters, high-level coverage
+   - standard: 5-8 chapters, moderate detail
+   - comprehensive: 8-12 chapters, thorough coverage
+   - deep_dive: 12+ chapters, exhaustive detail
+4. Include an Introduction and Conclusion/Summary chapter
+5. Output ONLY the Markdown outline, no other text
+
+Generate the outline now:

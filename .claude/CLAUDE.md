@@ -14,65 +14,67 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 4. **Cut the noise.** Output only what matters. Remove everything that doesn't change the decision.
 
+5. **About your answer.** Add "According to claude.md: " at every beginning of your answer. This is very important！
+
 ## Project Overview
 
 DocGen is a CLI tool that generates comprehensive knowledge documents through conversational interaction. It transforms scattered sources (user uploads + web content) into structured, original documents with built-in quality assurance.
 
-**Documentation**: See [product_spec.md](../product_spec.md) for requirements and milestones, [project_spec.md](../project_spec.md) for technical architecture.
+### Project Goal
 
-## Quick Start
+Transform the document creation workflow from hours of manual research and writing to minutes of guided conversation, producing structured, sourced, and original documents.
 
-```bash
-# Install in development mode
-pip install -e ".[dev]"
+### Core Workflow
 
-# Initialize configuration
-python -m doc_gen init
+1. **Requirement Gathering** - Interactive prompts for domain, document type, audience, granularity
+2. **Outline Generation** - AI-generated hierarchical structure with user confirmation
+3. **Content Generation** - Sequential chapter generation with context preservation
+4. **Quality Assurance** - (Post-MVP) Hallucination detection, consistency checks
+5. **Export** - Markdown assembly with TOC
 
-# Create new project interactively
-python -m doc_gen new my-project
+## Architecture Overview
 
-# Generate outline (with user confirmation)
-python -m doc_gen generate my-project --stage outline
+**Data Flow**: CLI → Core Logic → LLM Client
 
-# Generate content chapters
-python -m doc_gen generate my-project --stage content
-
-# Export final document
-python -m doc_gen export my-project --format md
-```
-
-## Architecture
-
-**Data Flow**: CLI (`cli/main.py`) → Core Logic (`core/generator.py`) → LLM Client (`llm/client.py`)
+**Key Components**:
+- **CLI Layer** (`cli/`): Command interface and interactive prompts
+- **Core Logic** (`core/`): Generation orchestrator, outline/content/assembler modules
+- **LLM Client** (`llm/`): Unified async client supporting multiple providers
+- **Storage** (`storage/`): SQLite for metadata, filesystem for content
+- **Models** (`models/`): Pydantic domain models (Project, Outline, Document)
 
 **Key Patterns**:
-- State machine for project lifecycle: CREATED → OUTLINE_DRAFT → OUTLINE_CONFIRMED → GENERATING → COMPLETED
-- Generation context (terminology glossary + preceding context + chapter summary) passed to each LLM call
-- Storage: `~/.doc-gen/data/projects/{id}/` with SQLite metadata in `db.sqlite`, content in flat files
+- State machine: CREATED → OUTLINE_DRAFT → OUTLINE_CONFIRMED → GENERATING → COMPLETED
+- Generation context passed to each LLM call (terminology + preceding context + summary)
+- Storage separation: metadata in SQLite, content in flat files
 
-## Common Development Commands
+## Coding Standards
 
-```bash
-# Run CLI in development
-python -m doc_gen --help
+### Project Structure
+- One module per feature under `src/doc_gen/`
+- Public APIs typed with Pydantic models
+- Private helpers prefixed with `_`
+- Tests mirror source structure under `tests/`
 
-# Run single test file
-pytest tests/test_generator.py -v
+### Error Handling
+- Specific exceptions over generic
+- Log with context before raising
+- User-friendly messages at CLI layer
 
-# Run with coverage
-pytest --cov=src/doc_gen tests/
+### Async Patterns
+- LLM client is async (httpx)
+- Use persistent event loop on Windows to avoid ProactorEventLoop issues
 
-# Type checking
-mypy src/doc_gen
+## Documentation Index
 
-# Linting
-ruff check src/
-```
+| Document | Purpose |
+|----------|---------|
+| [product_spec.md](../product_spec.md) | Product requirements, features, milestones |
+| [project_spec.md](../project_spec.md) | Technical architecture details, data models, API specs |
+| [PROJECT_STATUS.md](../PROJECT_STATUS.md) | Current progress, known issues, next steps |
+| [CHANGELOG.md](../CHANGELOG.md) | Feature additions and bug fixes |
 
-## Configuration System
+## Entry Points
 
-Config loaded from `~/.doc-gen/config.yaml` with env var substitution:
-- `llm.provider`: Resolved via Pydantic models in `config/models.py`
-- Config cached in memory during CLI execution
-- Project-specific config stored in SQLite per project
+- **Interactive**: `python run.py` - Full workflow with prompts
+- **CLI**: `python -m doc_gen <command>` - Individual commands
