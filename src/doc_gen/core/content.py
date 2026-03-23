@@ -37,6 +37,7 @@ async def generate_chapter(
         audience=ctx.audience,
         style_tone=ctx.style_tone,
         style_person=ctx.style_person,
+        language=ctx.language,
         chapter_index=str(ctx.chapter_index + 1),
         chapter_title=ctx.chapter_title,
         chapter_outline=ctx.chapter_outline or ctx.chapter_title,

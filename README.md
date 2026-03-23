@@ -7,6 +7,7 @@ A CLI tool that generates comprehensive knowledge documents through conversation
 - **Interactive Workflow**: Guided prompts for document requirements
 - **AI-Powered Outline**: Automatic structure generation with user confirmation
 - **Sequential Content Generation**: Chapter-by-chapter writing with context preservation
+- **Multi-Language Support**: Generate documents in 7 languages
 - **Custom Output Directory**: Export to your preferred location
 - **Multi-Source Support**: Upload reference files (txt, md, pdf, docx)
 - **Quality Assurance**: Terminology consistency across chapters
@@ -56,7 +57,7 @@ python run.py
 
 This runs the complete workflow:
 1. API connection check
-2. Project setup (domain, type, audience, granularity)
+2. Project setup (domain, type, audience, granularity, language)
 3. Custom output directory selection
 4. Outline generation with confirmation
 5. Content generation
@@ -89,6 +90,16 @@ python -m doc_gen list
 - **Knowledge Handbook**: Comprehensive topic coverage
 - **API Documentation**: Interface documentation
 - **Learning Guide**: Educational content
+
+## Supported Languages
+
+- 简体中文 (Chinese)
+- English
+- 日本語 (Japanese)
+- 한국어 (Korean)
+- Français (French)
+- Deutsch (German)
+- Español (Spanish)
 
 ## Output
 

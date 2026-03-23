@@ -17,6 +17,10 @@ if sys.platform == "win32":
 # Ensure project src is importable
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+# Setup logging
+from doc_gen.utils.logger import setup_logging
+setup_logging("INFO")
+
 # Persistent event loop to avoid "Event loop is closed" errors
 _loop = asyncio.new_event_loop()
 
@@ -172,6 +176,7 @@ def step_create_project(project_name: str) -> bool:
         prompt_files,
         prompt_granularity,
         prompt_audience,
+        prompt_language,
     )
     from doc_gen.config.loader import ensure_data_dir, load_config
     from doc_gen.models.project import ProjectConfig
@@ -205,6 +210,7 @@ def step_create_project(project_name: str) -> bool:
         doc_type = prompt_doc_type()
         audience = prompt_audience()
         granularity = prompt_granularity()
+        language = prompt_language()
 
         # Ask for custom output directory
         default_output = data_dir / "output"
@@ -216,6 +222,7 @@ def step_create_project(project_name: str) -> bool:
             doc_type=doc_type,
             audience=audience,
             granularity=granularity,
+            language=language,
             output_dir=str(output_dir) if output_dir != default_output else None,
         )
 

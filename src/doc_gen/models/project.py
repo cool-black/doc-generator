@@ -36,6 +36,16 @@ class Granularity(str, Enum):
     DEEP_DIVE = "deep_dive"
 
 
+class Language(str, Enum):
+    CHINESE = "zh"
+    ENGLISH = "en"
+    JAPANESE = "ja"
+    KOREAN = "ko"
+    FRENCH = "fr"
+    GERMAN = "de"
+    SPANISH = "es"
+
+
 class TermDefinition(BaseModel):
     primary: str
     aliases: list[str] = Field(default_factory=list)
@@ -60,6 +70,7 @@ class ProjectConfig(BaseModel):
     doc_type: DocumentType = DocumentType.TUTORIAL
     audience: str = ""
     granularity: Granularity = Granularity.STANDARD
+    language: Language = Language.CHINESE
 
     # Sources
     user_files: list[str] = Field(default_factory=list)

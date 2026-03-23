@@ -4,6 +4,7 @@ Document Type: {doc_type}
 Domain/Topic: {domain}
 Target Audience: {audience}
 Granularity Level: {granularity}
+Language: {language}
 
 {source_context}
 
@@ -16,6 +17,7 @@ Requirements:
    - comprehensive: 8-12 chapters, thorough coverage
    - deep_dive: 12+ chapters, exhaustive detail
 4. Include an Introduction and Conclusion/Summary chapter
-5. Output ONLY the Markdown outline, no other text
+5. Write the outline in the specified language ({language})
+6. Output ONLY the Markdown outline, no other text
 
 Generate the outline now:

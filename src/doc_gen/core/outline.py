@@ -33,6 +33,7 @@ async def generate_outline(
         domain=config.domain,
         audience=config.audience,
         granularity=config.granularity.value.replace("_", " "),
+        language=config.language.value,
         source_context=source_context,
     )
 

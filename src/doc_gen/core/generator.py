@@ -97,6 +97,7 @@ class DocumentGenerator:
                 style_person=project.style_guide.person,
                 audience=project.audience,
                 doc_type=project.doc_type.value.replace("_", " ").title(),
+                language=project.language.value,
             )
 
             result = await generate_chapter(ctx, self.llm)

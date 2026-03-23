@@ -14,6 +14,7 @@ from doc_gen.cli.prompts import (
     prompt_domain,
     prompt_files,
     prompt_granularity,
+    prompt_language,
     prompt_outline_action,
 )
 from doc_gen.config.loader import CONFIG_FILE, ensure_data_dir, load_config, save_config
@@ -103,6 +104,7 @@ def cmd_new(name: str) -> None:
     doc_type = prompt_doc_type()
     audience = prompt_audience()
     granularity = prompt_granularity()
+    language = prompt_language()
 
     project = ProjectConfig(
         name=name,
@@ -110,6 +112,7 @@ def cmd_new(name: str) -> None:
         doc_type=doc_type,
         audience=audience,
         granularity=granularity,
+        language=language,
     )
 
     # Create directory structure
@@ -159,6 +162,7 @@ def cmd_status(name: str) -> None:
     click.echo(f"Type: {project.doc_type.value}")
     click.echo(f"Audience: {project.audience}")
     click.echo(f"Granularity: {project.granularity.value}")
+    click.echo(f"Language: {project.language.value}")
     click.echo(f"Created: {project.created_at}")
     click.echo(f"Updated: {project.updated_at}")
     click.echo(f"Files: {len(project.user_files)}")

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import click
 
-from doc_gen.models.project import DocumentType, Granularity
+from doc_gen.models.project import DocumentType, Granularity, Language
 
 
 def prompt_domain() -> str:
@@ -51,6 +51,30 @@ def prompt_granularity() -> Granularity:
         click.echo(f"  {i}. {g.value.replace('_', ' ').title()}")
     idx = click.prompt("Select granularity", type=click.IntRange(1, len(choices)), default=2)
     return Granularity(choices[idx - 1])
+
+
+LANGUAGE_OPTIONS = [
+    ("zh", "简体中文"),
+    ("en", "English"),
+    ("ja", "日本語"),
+    ("ko", "한국어"),
+    ("fr", "Français"),
+    ("de", "Deutsch"),
+    ("es", "Español"),
+]
+
+
+def prompt_language() -> Language:
+    click.echo("\nDocument language:")
+    for i, (_, label) in enumerate(LANGUAGE_OPTIONS, 1):
+        click.echo(f"  {i}. {label}")
+    idx = click.prompt(
+        "Select language",
+        type=click.IntRange(1, len(LANGUAGE_OPTIONS)),
+        default=1,
+    )
+    key, _ = LANGUAGE_OPTIONS[idx - 1]
+    return Language(key)
 
 
 def prompt_files(project_upload_dir: Path) -> list[str]:

@@ -3,6 +3,7 @@ You are a technical writer generating a chapter for a knowledge document.
 Document Type: {doc_type}
 Target Audience: {audience}
 Writing Style: {style_tone} tone, {style_person} person
+Language: {language}
 
 Chapter {chapter_index}: {chapter_title}
 
@@ -25,6 +26,7 @@ Requirements:
 5. Include practical examples where appropriate
 6. Use proper Markdown formatting (headings, lists, code blocks)
 7. Do NOT include the chapter title as a top-level heading (it will be added during assembly)
-8. Output ONLY the chapter content in Markdown
+8. Write the content in the specified language ({language})
+9. Output ONLY the chapter content in Markdown
 
 Generate the chapter content now:

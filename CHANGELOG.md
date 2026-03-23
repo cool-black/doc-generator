@@ -22,10 +22,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 #### CLI & Interactive Workflow
 - Created `run.py` - Interactive workflow runner with 5-step process:
   1. API connection check
-  2. Project setup (with domain, type, audience, granularity selection)
+  2. Project setup (with domain, type, audience, granularity, language selection)
   3. Outline generation with user confirmation
   4. Content generation with progress logging
   5. Automatic document export
+- Added `prompt_language()` - Language selection for document generation
+  - Supports: 简体中文, English, 日本語, 한국어, Français, Deutsch, Español
 - Added `prompt_output_dir()` - Interactive output directory selection
   - Validates parent directory exists
   - Checks write permissions
@@ -42,9 +44,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 #### Data Models
 - `ProjectConfig` - Project configuration with status tracking
+  - Added `language` field with 7 supported languages
 - `Outline` / `OutlineSection` - Document structure
 - `GenerationContext` - Context passed to each chapter generation
+  - Added `language` field for language-aware generation
 - `ChapterResult` - Chapter generation results with tokens and duration
+- `Language` - Enum for supported document languages
 
 #### Storage & Persistence
 - SQLite database for project metadata

@@ -20,6 +20,7 @@ class GenerationContext(BaseModel):
     style_person: str = "third"
     audience: str = ""
     doc_type: str = "tutorial"
+    language: str = "zh"
 
 
 class ChapterResult(BaseModel):

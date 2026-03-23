@@ -28,13 +28,14 @@ DocGen is a functional CLI tool that generates knowledge documents through AI-po
 
 | Feature | Status | Priority | Notes |
 |---------|--------|----------|-------|
-| **Project Creation** | ✅ Complete | P0 | Interactive wizard with domain/type/audience |
+| **Project Creation** | ✅ Complete | P0 | Interactive wizard with domain/type/audience/language |
 | **File Upload** | ✅ Complete | P0 | txt, md, pdf, docx support |
 | **Outline Generation** | ✅ Complete | P0 | AI-generated with user confirmation |
 | **Content Generation** | ✅ Complete | P0 | Sequential chapter generation |
 | **Document Export** | ✅ Complete | P0 | Markdown with TOC |
 | **Custom Output Dir** | ✅ Complete | P1 | User-defined export location |
 | **Progress Logging** | ✅ Complete | P1 | Detailed generation progress |
+| **Language Selection** | ✅ Complete | P1 | Multi-language document generation (7 languages) |
 | **Hallucination Detection** | 🚧 Planned | P1 | Post-MVP feature |
 | **Web Crawling** | 🚧 Planned | P2 | Multi-source integration |
 | **Word Export** | 🚧 Planned | P2 | DOCX format output |
@@ -221,6 +222,7 @@ pytest, mypy, ruff
 ## Recent Activity
 
 ### 2026-03-23
+- ✅ Added multi-language support (简体中文, English, 日本語, 한국어, Français, Deutsch, Español)
 - ✅ Fixed TOC generation (proper chapter titles)
 - ✅ Fixed duplicate chapter numbering
 - ✅ Added custom output directory support
