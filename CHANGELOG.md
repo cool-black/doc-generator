@@ -138,6 +138,28 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Technical Debt
 
+#### Bug Fixes
+- **Status Management**: Fixed outline confirmation not properly persisting `OUTLINE_CONFIRMED` status
+  - `run.py` - Added project reload after outline confirmation to ensure status is persisted
+  - `commands.py` - Added project reload after outline confirmation in CLI command
+  - Added comprehensive tests in `tests/test_status_management.py`
+
+#### Quality Assurance (M4)
+- **Content Review System**: Implemented automated content quality review
+  - `ContentReviewer` class - Reviews chapters for accuracy and hallucinations
+  - `ReviewResult` model - Structured review results with scores and issues
+  - `QualityMetrics` - Aggregated metrics across all chapters
+  - Automatic regeneration loop for failed reviews (max 2 retries)
+  - Review prompt template at `llm/prompts/review.txt`
+  - Review results saved to `projects/{id}/reviews/`
+  - Four quality criteria scored 0-100:
+    - Factual Accuracy
+    - Consistency with Outline
+    - Terminology Consistency
+    - Hallucination Detection
+  - Passing threshold: 80+ overall score, no high-severity hallucinations
+  - Added tests in `tests/test_reviewer.py`
+
 #### Known Issues
 - `asyncio` import unused warning in generator.py (line 5)
 - `Outline` import unused warning in generator.py (line 14)

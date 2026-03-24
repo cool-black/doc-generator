@@ -218,6 +218,8 @@ def _generate_outline(generator: DocumentGenerator, project: ProjectConfig) -> N
             project.status = ProjectStatus.OUTLINE_CONFIRMED
             generator.repo.update(project)
             click.echo("Outline confirmed.")
+            # Reload project to ensure status is persisted
+            project = generator.repo.get_by_name(project.name)
             break
         elif action == "regenerate":
             click.echo("Regenerating...")

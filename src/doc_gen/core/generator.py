@@ -9,6 +9,7 @@ from doc_gen.config.models import AppConfig
 from doc_gen.core.assembler import assemble_document
 from doc_gen.core.content import generate_chapter
 from doc_gen.core.outline import generate_outline, parse_outline_markdown
+from doc_gen.core.reviewer import ContentReviewer
 from doc_gen.llm.client import LLMClient
 from doc_gen.models.document import GenerationContext
 from doc_gen.models.outline import Outline
@@ -30,11 +31,25 @@ class DocumentGenerator:
         app_config: AppConfig,
         repo: ProjectRepository,
         storage: ProjectStorage,
+        enable_review: bool = True,
     ) -> None:
         self.app_config = app_config
         self.repo = repo
         self.storage = storage
         self.llm = LLMClient(app_config.llm)
+        self.enable_review = enable_review
+
+        # Initialize reviewer if enabled
+        if enable_review:
+            self.reviewer = ContentReviewer(
+                llm_client=self.llm,
+                storage=storage,
+                repo=repo,
+                min_score=80,
+                max_retries=2,
+            )
+        else:
+            self.reviewer = None
 
     async def generate_outline(self, project: ProjectConfig) -> str:
         """Generate and save outline for a project."""
@@ -131,11 +146,57 @@ class DocumentGenerator:
                 language=project.language.value,
             )
 
-            result = await generate_chapter(ctx, self.llm)
+            # Generation loop with review
+            chapter_content = ""
+            attempt = 0
+            review_result = None
+
+            while attempt <= (2 if self.reviewer else 0):  # Max 3 attempts (initial + 2 retries)
+                if attempt > 0:
+                    logger.info("Regenerating chapter %d (attempt %d)", i + 1, attempt + 1)
+
+                # Generate chapter
+                result = await generate_chapter(ctx, self.llm)
+                chapter_content = result.content
+
+                # Review if enabled
+                if self.reviewer and attempt < 3:
+                    review_result = await self.reviewer.review_chapter(
+                        project=project,
+                        chapter_index=i,
+                        chapter_title=section.title,
+                        chapter_content=chapter_content,
+                        ctx=ctx,
+                    )
+
+                    if review_result.passed:
+                        logger.info(
+                            "Chapter %d passed review (score: %d)",
+                            i + 1,
+                            review_result.overall_score,
+                        )
+                        break
+                    elif self.reviewer.should_regenerate(review_result, attempt):
+                        logger.warning(
+                            "Chapter %d failed review (score: %d), regenerating...",
+                            i + 1,
+                            review_result.overall_score,
+                        )
+                        attempt += 1
+                        continue
+                    else:
+                        logger.warning(
+                            "Chapter %d failed review (score: %d), max retries reached",
+                            i + 1,
+                            review_result.overall_score,
+                        )
+                        break
+                else:
+                    break
 
             # Save chapter
             slug = slugify(section.title)
-            path = self.storage.save_chapter(project.id, i + 1, slug, result.content)
+            path = self.storage.save_chapter(project.id, i + 1, slug, chapter_content)
             chapter_files.append(str(path))
 
             # Update context for next chapter
@@ -241,5 +302,17 @@ class DocumentGenerator:
         text = " ".join(non_header_lines)
         return truncate(text, max_length)
 
+    def get_quality_report(self) -> dict | None:
+        """Get quality metrics report from reviewer.
+
+        Returns:
+            Quality metrics dictionary or None if review is disabled
+        """
+        if self.reviewer:
+            return self.reviewer.get_metrics_report()
+        return None
+
     async def close(self) -> None:
+        if self.reviewer:
+            await self.reviewer.close()
         await self.llm.close()

@@ -1,0 +1,90 @@
+You are a content quality reviewer. Your task is to review the generated chapter for accuracy, consistency, and potential hallucinations.
+
+## Review Criteria
+
+1. **Factual Accuracy (0-100)**
+   - Are all facts and claims supported by the source materials?
+   - Are technical details correct?
+   - Score: ___
+
+2. **Consistency with Outline (0-100)**
+   - Does the content follow the chapter outline?
+   - Are all outline points covered?
+   - Is the content at the appropriate depth/level?
+   - Score: ___
+
+3. **Terminology Consistency (0-100)**
+   - Are technical terms used consistently?
+   - Do definitions match the glossary?
+   - Score: ___
+
+4. **Hallucination Detection (0-100)**
+   - Is there any content not supported by sources or common knowledge?
+   - Are there made-up examples, quotes, or references?
+   - Are statistics or data properly attributed?
+   - Score: ___
+
+## Output Format
+
+Return your review in this exact format:
+
+```json
+{{
+  "overall_score": <0-100>,
+  "passed": <true/false>,
+  "scores": {{
+    "factual_accuracy": <0-100>,
+    "consistency": <0-100>,
+    "terminology": <0-100>,
+    "hallucination_free": <0-100>
+  }},
+  "issues": [
+    {{
+      "severity": "high|medium|low",
+      "category": "factual|consistency|terminology|hallucination",
+      "description": "Description of the issue",
+      "suggestion": "How to fix it"
+    }}
+  ],
+  "summary": "Brief summary of the review"
+}}
+```
+
+## Context
+
+Document Domain: {domain}
+Document Type: {doc_type}
+Target Audience: {audience}
+Language: {language}
+
+## Chapter Outline
+
+{chapter_outline}
+
+## Terminology Glossary
+
+{terminology_glossary}
+
+## Source Materials (Excerpt)
+
+{source_excerpt}
+
+## Generated Chapter
+
+{chapter_content}
+
+## Review Instructions
+
+1. Carefully compare the generated content against the outline
+2. Verify facts against source materials when possible
+3. Identify any unsupported claims or hallucinations
+4. Check terminology consistency with the glossary
+5. Provide specific, actionable feedback
+6. Score each criterion objectively
+
+A chapter passes if:
+- Overall score >= 80
+- No high-severity hallucination issues
+- All outline sections are covered
+
+Return ONLY the JSON response, no additional text.

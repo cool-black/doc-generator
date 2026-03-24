@@ -302,6 +302,8 @@ def step_generate_outline(project_name: str) -> bool:
                 project.status = ProjectStatus.OUTLINE_CONFIRMED
                 repo.update(project)
                 print_success("Outline confirmed.")
+                # Reload project to ensure status is persisted
+                project = repo.get_by_name(project.name)
                 return True
             elif action == "regenerate":
                 print("  Regenerating...")

@@ -98,3 +98,49 @@ class ProjectStorage:
         if not upload_dir.exists():
             return []
         return list(upload_dir.iterdir())
+
+    def save_review(
+        self,
+        project_id: str,
+        chapter_index: int,
+        review_data: dict,
+    ) -> Path:
+        """Save chapter review results.
+
+        Args:
+            project_id: Project ID
+            chapter_index: Chapter index (0-based)
+            review_data: Review result dictionary
+
+        Returns:
+            Path to saved review file
+        """
+        reviews_dir = self.project_dir(project_id) / "reviews"
+        reviews_dir.mkdir(parents=True, exist_ok=True)
+
+        filename = f"{chapter_index + 1:02d}_review.json"
+        path = reviews_dir / filename
+        path.write_text(
+            json.dumps(review_data, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        return path
+
+    def load_reviews(self, project_id: str) -> list[dict]:
+        """Load all review results for a project.
+
+        Returns:
+            List of review data dictionaries
+        """
+        reviews_dir = self.project_dir(project_id) / "reviews"
+        if not reviews_dir.exists():
+            return []
+
+        reviews = []
+        for file_path in sorted(reviews_dir.glob("*_review.json")):
+            try:
+                data = json.loads(file_path.read_text(encoding="utf-8"))
+                reviews.append(data)
+            except (json.JSONDecodeError, IOError):
+                continue
+        return reviews

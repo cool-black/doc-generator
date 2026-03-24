@@ -30,7 +30,13 @@ class LLMClient:
     @property
     def client(self) -> httpx.AsyncClient:
         if self._client is None:
-            self._client = httpx.AsyncClient(timeout=self.config.timeout)
+            # Disable HTTP/2 and trust_env to avoid TLS/compatibility issues
+            # trust_env=False prevents httpx from reading proxy settings from env
+            self._client = httpx.AsyncClient(
+                timeout=self.config.timeout,
+                http2=False,
+                trust_env=False,  # Don't read proxy from environment
+            )
         return self._client
 
     async def generate(

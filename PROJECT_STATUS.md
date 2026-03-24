@@ -41,7 +41,7 @@ DocGen is a functional CLI tool that generates knowledge documents through AI-po
 | **SQLite Concurrency** | ✅ Complete | P0 | P0-3: WAL mode, busy timeout |
 | **Token Optimization** | ✅ Complete | P1 | P1-4: Context compression |
 | **Version History** | ✅ Complete | P1 | P1-5: Snapshots and rollback |
-| **Hallucination Detection** | 🚧 Planned | P1 | Post-MVP feature |
+| **Hallucination Detection** | ✅ Complete | P1 | M4: ContentReviewer with auto-regeneration |
 | **Web Crawling** | 🚧 Planned | P2 | Multi-source integration |
 | **Word Export** | 🚧 Planned | P2 | DOCX format output |
 | **Partial Regeneration** | 🚧 Planned | P2 | Chapter-level rewrite |
@@ -66,18 +66,20 @@ src/doc_gen/
 │   ├── generator.py      ✅ Main orchestrator
 │   ├── outline.py        ✅ Outline generation
 │   ├── content.py        ✅ Chapter generation
-│   └── assembler.py      ✅ Document assembly
+│   ├── assembler.py      ✅ Document assembly
+│   └── reviewer.py       ✅ Quality review (M4)
 ├── llm/
 │   ├── client.py         ✅ LLM client with retry
 │   ├── providers.py      ✅ Provider config
 │   └── prompts/          ✅ Prompt templates
 │       ├── outline.txt   ✅
 │       ├── chapter.txt   ✅
-│       └── review.txt    🚧 (placeholder)
+│       └── review.txt    ✅ Quality review prompt
 ├── models/
 │   ├── project.py        ✅ Project models
 │   ├── outline.py        ✅ Outline structures
-│   └── document.py       ✅ Document models
+│   ├── document.py       ✅ Document models
+│   └── review.py         ✅ Review models (M4)
 ├── storage/
 │   ├── database.py       ✅ SQLite operations
 │   ├── project.py        ✅ Filesystem storage
@@ -117,12 +119,6 @@ src/doc_gen/
 | Unused import `asyncio` | generator.py:5 | Warning | Low |
 | Unused import `Outline` | generator.py:14 | Warning | Low |
 | Unused param `output_format` | generator.py:128 | Warning | Low |
-| Project status incorrectly set | run.py outline flow | Workaround exists | Medium |
-
-### Workarounds
-| Issue | Workaround |
-|-------|------------|
-| Status set to `generating` instead of `outline_confirmed` | Manual status fix via Python script |
 
 ---
 
@@ -130,11 +126,12 @@ src/doc_gen/
 
 | Test Type | Status | Coverage |
 |-----------|--------|----------|
-| Unit Tests | ✅ Good | 55% |
+| Unit Tests | ✅ Good | 55% → improving |
 | Integration Tests | 🚧 None | 0% |
 | E2E Tests | ✅ Manual | Tested with real generation |
 | CLI Tests | 🚧 Basic | Commands tested |
 | TDD Workflow | ✅ Configured | [docs/TDD_WORKFLOW.md](docs/TDD_WORKFLOW.md) |
+| Latest Test Run | ✅ 21/21 Passing | test_reviewer.py + test_status_management.py |
 
 ### Test Files
 ```
@@ -148,6 +145,8 @@ tests/
 ├── test_content_generator.py      ✅ TDD examples
 ├── test_models.py                 ✅
 ├── test_recovery.py               ✅ P0-1: Error recovery
+├── test_reviewer.py               ✅ M4: Quality review system
+├── test_status_management.py      ✅ Status management bug fix
 ├── test_storage.py                ✅
 ├── test_token_compression.py      ✅ P1-4: Token optimization
 └── test_version_history.py        ✅ P1-5: Version history
@@ -181,12 +180,11 @@ python scripts/test.py --watch
 ## Next Steps
 
 ### Immediate (This Week)
-1. **Fix status management bug** - Outline confirmation should set correct status
-2. **Complete test coverage** - Add missing unit tests
-3. **Add export format options** - At least DOCX support
+1. **Complete test coverage** - Add missing unit tests (target: 80%)
+2. **Add export format options** - At least DOCX support
 
 ### Short Term (Next 2 Weeks)
-4. **Hallucination detection** - Basic review agent
+4. ✅ ~~Hallucination detection~~ - ContentReviewer implemented
 5. **Web crawling** - Basic URL content extraction
 6. **Enhanced error recovery** - Better retry and resume
 
@@ -249,6 +247,19 @@ pytest, mypy, ruff
 ## Recent Activity
 
 ### 2026-03-24
+- ✅ Fixed status management bug
+  - `run.py` - Added project reload after outline confirmation ([run.py:302](run.py#L302))
+  - `commands.py` - Added project reload after outline confirmation ([commands.py:220](src/doc_gen/cli/commands.py#L220))
+  - Added `tests/test_status_management.py` with regression tests
+- ✅ Implemented M4: Quality Assurance - Hallucination Detection
+  - `ContentReviewer` class - Automated content review system
+  - `ReviewResult`, `QualityMetrics` models
+  - `review.txt` prompt template for LLM-based review
+  - Auto-regeneration loop (max 2 retries for failed reviews)
+  - Four quality criteria: factual accuracy, consistency, terminology, hallucination detection
+  - Review results saved to `projects/{id}/reviews/`
+  - Added `tests/test_reviewer.py` with comprehensive tests
+  - Integrated into `DocumentGenerator.generate_content()`
 - ✅ Implemented P0 improvements from Qwen evaluation
   - P0-1: Error recovery with resume capability (checkpoint restore)
   - P0-2: Better configuration validation with helpful error messages
