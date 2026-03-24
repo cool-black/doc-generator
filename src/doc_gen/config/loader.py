@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 from pathlib import Path
@@ -9,6 +10,14 @@ from pathlib import Path
 import yaml
 
 from doc_gen.config.models import AppConfig, LLMConfig, LLMProvider
+
+logger = logging.getLogger(__name__)
+
+
+class ConfigError(Exception):
+    """Raised when configuration is invalid or missing."""
+
+    pass
 
 CONFIG_DIR = Path.home() / ".doc-gen"
 CONFIG_FILE = CONFIG_DIR / "config.yaml"
@@ -20,8 +29,11 @@ _ENV_SEARCH_PATHS = [
 ]
 
 
-def _load_dotenv() -> None:
-    """Load .env file into os.environ (simple implementation, no dependency)."""
+def _load_dotenv() -> Path | None:
+    """Load .env file into os.environ (simple implementation, no dependency).
+
+    Returns the path of the loaded .env file, or None if not found.
+    """
     for env_path in _ENV_SEARCH_PATHS:
         if env_path.exists():
             with open(env_path, encoding="utf-8") as f:
@@ -36,7 +48,13 @@ def _load_dotenv() -> None:
                     value = value.strip().strip("'\"")
                     if key and key not in os.environ:  # don't override existing env
                         os.environ[key] = value
-            return  # stop after first .env found
+            logger.debug("Loaded .env from %s", env_path)
+            return env_path  # stop after first .env found
+
+    # No .env file found - log helpful warning
+    searched = ", ".join(str(p) for p in _ENV_SEARCH_PATHS)
+    logger.warning("No .env file found. Searched: %s", searched)
+    return None
 
 
 def _substitute_env_vars(value: str) -> str:
@@ -81,8 +99,15 @@ def _config_from_env() -> AppConfig:
     return AppConfig(llm=llm)
 
 
-def load_config() -> AppConfig:
-    """Load configuration. Priority: .env > config.yaml > defaults."""
+def load_config(require_api_key: bool = False) -> AppConfig:
+    """Load configuration. Priority: .env > config.yaml > defaults.
+
+    Args:
+        require_api_key: If True, raise ConfigError when API key is not configured.
+
+    Raises:
+        ConfigError: If require_api_key is True and no API key is found.
+    """
     _load_dotenv()
 
     # If LLM_API_KEY is set in env (from .env or system), use env-based config
@@ -94,7 +119,24 @@ def load_config() -> AppConfig:
         with open(CONFIG_FILE, encoding="utf-8") as f:
             raw = yaml.safe_load(f) or {}
         data = _process_env_vars(raw)
-        return AppConfig.model_validate(data)
+        config = AppConfig.model_validate(data)
+        if require_api_key and not config.llm.api_key:
+            raise ConfigError(
+                "API key not configured. Please set LLM_API_KEY in your .env file:\n"
+                "  LLM_API_KEY=your-api-key-here\n\n"
+                f"Expected .env file location: {_ENV_SEARCH_PATHS[0]}"
+            )
+        return config
+
+    # No configuration found
+    if require_api_key:
+        raise ConfigError(
+            "API key not configured. Please create a .env file with:\n"
+            "  LLM_API_KEY=your-api-key-here\n"
+            "  LLM_PROVIDER=openai\n"
+            "  LLM_MODEL=gpt-4\n\n"
+            f"Expected .env file location: {_ENV_SEARCH_PATHS[0]}"
+        )
 
     return AppConfig()
 
