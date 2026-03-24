@@ -62,6 +62,27 @@ class ProjectStorage:
         files = sorted(chapters_dir.glob("*.md"))
         return [(f.name, f.read_text(encoding="utf-8")) for f in files]
 
+    def get_last_generated_chapter(self, project_id: str) -> int:
+        """Get the highest chapter index from existing chapter files.
+
+        Returns -1 if no chapters exist.
+        Chapter files are named like '01_intro.md', '02_content.md' etc.
+        """
+        chapters_dir = self.project_dir(project_id) / "chapters"
+        if not chapters_dir.exists():
+            return -1
+
+        max_index = -1
+        for file_path in chapters_dir.glob("*.md"):
+            # Extract index from filename like '01_intro.md' -> 1
+            name = file_path.stem  # '01_intro'
+            parts = name.split("_", 1)  # ['01', 'intro']
+            if parts and parts[0].isdigit():
+                index = int(parts[0])
+                max_index = max(max_index, index)
+
+        return max_index
+
     def save_output(self, project_id: str, filename: str, content: str) -> Path:
         path = self.project_dir(project_id) / "output" / filename
         path.write_text(content, encoding="utf-8")

@@ -59,13 +59,28 @@ class DocumentGenerator:
         return outline_md
 
     async def generate_content(self, project: ProjectConfig) -> list[str]:
-        """Generate all chapters based on confirmed outline."""
+        """Generate all chapters based on confirmed outline.
+
+        Supports resume from checkpoint - will skip already generated chapters
+        and continue from where it left off.
+        """
         outline_md = self.storage.load_outline(project.id)
         if not outline_md:
             raise RuntimeError("No outline found. Generate outline first.")
 
         outline = parse_outline_markdown(outline_md)
         source_texts = self._load_sources(project)
+
+        # Check for existing chapters to support resume
+        last_generated = self.storage.get_last_generated_chapter(project.id)
+        start_index = last_generated if last_generated >= 0 else 0
+
+        if start_index > 0:
+            logger.info(
+                "Resuming generation from chapter %d (%d already completed)",
+                start_index + 1,
+                start_index,
+            )
 
         # Update status
         project.status = ProjectStatus.GENERATING
@@ -77,10 +92,26 @@ class DocumentGenerator:
             for term, defn in project.terminology.items()
         }
 
+        # Load existing chapters to restore context
         chapter_files: list[str] = []
         preceding_summary = ""
+        existing_chapters = self.storage.load_chapters(project.id)
+
+        # Populate chapter_files from existing chapters
+        for filename, _ in existing_chapters:
+            chapter_path = self.storage.project_dir(project.id) / "chapters" / filename
+            chapter_files.append(str(chapter_path))
+
+        # Restore preceding_summary from last generated chapter
+        if existing_chapters and start_index > 0:
+            last_chapter_content = existing_chapters[-1][1]
+            preceding_summary = self._extract_summary(last_chapter_content)
 
         for i, section in enumerate(outline.sections):
+            # Skip already generated chapters
+            if i < start_index:
+                logger.debug("Skipping chapter %d (already generated)", i + 1)
+                continue
             # Build sub-outline for this chapter
             chapter_outline = self._section_to_outline_text(section)
 
@@ -190,6 +221,25 @@ class DocumentGenerator:
             for sub in child.children:
                 lines.append(f"    - {sub.title}")
         return "\n".join(lines)
+
+    def _extract_summary(self, content: str, max_length: int = 500) -> str:
+        """Extract a summary from chapter content for context passing.
+
+        Returns the first paragraph or up to max_length characters.
+        """
+        # Remove markdown headers
+        lines = content.split("\n")
+        non_header_lines = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped and not stripped.startswith("#"):
+                non_header_lines.append(line)
+
+        if not non_header_lines:
+            return ""
+
+        text = " ".join(non_header_lines)
+        return truncate(text, max_length)
 
     async def close(self) -> None:
         await self.llm.close()
