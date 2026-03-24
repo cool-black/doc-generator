@@ -36,6 +36,9 @@ DocGen is a functional CLI tool that generates knowledge documents through AI-po
 | **Custom Output Dir** | ✅ Complete | P1 | User-defined export location |
 | **Progress Logging** | ✅ Complete | P1 | Detailed generation progress |
 | **Language Selection** | ✅ Complete | P1 | Multi-language document generation (7 languages) |
+| **Error Recovery (Resume)** | ✅ Complete | P0 | P0-1: Resume from checkpoint |
+| **Config Validation** | ✅ Complete | P0 | P0-2: Better error messages |
+| **SQLite Concurrency** | ✅ Complete | P0 | P0-3: WAL mode, busy timeout |
 | **Hallucination Detection** | 🚧 Planned | P1 | Post-MVP feature |
 | **Web Crawling** | 🚧 Planned | P2 | Multi-source integration |
 | **Word Export** | 🚧 Planned | P2 | DOCX format output |
@@ -125,7 +128,7 @@ src/doc_gen/
 
 | Test Type | Status | Coverage |
 |-----------|--------|----------|
-| Unit Tests | 🚧 Partial | 42% |
+| Unit Tests | ✅ Good | 52% |
 | Integration Tests | 🚧 None | 0% |
 | E2E Tests | ✅ Manual | Tested with real generation |
 | CLI Tests | 🚧 Basic | Commands tested |
@@ -138,8 +141,11 @@ tests/
 ├── conftest.py                    ✅ Fixtures
 ├── test_cli.py                    🚧 Partial
 ├── test_config.py                 ✅
+├── test_config_validation.py      ✅ P0-2: Config validation
+├── test_concurrency.py            ✅ P0-3: SQLite concurrency
 ├── test_content_generator.py      ✅ TDD examples
 ├── test_models.py                 ✅
+├── test_recovery.py               ✅ P0-1: Error recovery
 └── test_storage.py                ✅
 ```
 
@@ -239,6 +245,11 @@ pytest, mypy, ruff
 ## Recent Activity
 
 ### 2026-03-24
+- ✅ Implemented P0 improvements from Qwen evaluation
+  - P0-1: Error recovery with resume capability (checkpoint restore)
+  - P0-2: Better configuration validation with helpful error messages
+  - P0-3: SQLite concurrency controls (WAL mode, busy timeout)
+  - Added comprehensive tests for all P0 improvements
 - ✅ Configured TDD workflow with pytest
   - Added `pytest.ini` with test configuration
   - Created `scripts/test.py` for convenient test running

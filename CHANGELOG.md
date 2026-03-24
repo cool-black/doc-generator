@@ -4,9 +4,29 @@ All notable changes to the DocGen project are documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased] - 2026-03-23
+## [Unreleased] - 2026-03-24
 
 ### Added
+
+#### Error Recovery (P0-1)
+- Implemented resume capability for document generation
+  - `ProjectStorage.get_last_generated_chapter()` - Detect already generated chapters
+  - `DocumentGenerator.generate_content()` now skips completed chapters on resume
+  - `_extract_summary()` restores context from existing chapters
+  - Added comprehensive tests in `tests/test_recovery.py`
+
+#### Configuration Validation (P0-2)
+- Added `ConfigError` exception for configuration issues
+- `load_config(require_api_key=True)` option for strict validation
+- Clear error messages when `.env` file is missing with expected paths
+- Helpful instructions when API key is not configured
+- Added tests in `tests/test_config_validation.py`
+
+#### SQLite Concurrency (P0-3)
+- Enabled WAL (Write-Ahead Logging) mode for better read concurrency
+- Set 10-second busy timeout to handle lock contention
+- Enabled `check_same_thread=False` for multi-threaded access
+- Added concurrency tests in `tests/test_concurrency.py`
 
 #### Configuration System
 - Added `.env` file support for LLM API configuration
