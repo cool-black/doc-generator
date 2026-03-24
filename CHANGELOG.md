@@ -105,8 +105,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - `Outline` import unused warning in generator.py (line 14)
 - `output_format` parameter unused in export_document (line 128)
 
-#### Testing
+#### TDD Workflow
+- Added TDD workflow configuration ([docs/TDD_WORKFLOW.md](docs/TDD_WORKFLOW.md))
+- Added `pytest.ini` with test markers and configuration
+- Added test script `scripts/test.py` for convenient test running
+- Added TDD example tests (`tests/test_content_generator.py`)
+- Updated [CLAUDE.md](CLAUDE.md) with TDD development guidelines
+
+#### Testing Status
 - Test infrastructure in place with pytest
+- Current coverage: ~42% (target: 80%+)
 - CLI tests need completion
 - Integration tests pending
 

@@ -50,6 +50,30 @@ Transform the document creation workflow from hours of manual research and writi
 
 ## Coding Standards
 
+### TDD Development (Test-First)
+
+**所有功能开发必须遵循 TDD 流程：**
+
+1. **红**: 先写测试，运行确认失败
+2. **绿**: 写最小实现使测试通过
+3. **重构**: 优化代码，保持测试通过
+
+**覆盖率要求**: 80%+
+
+```bash
+# 运行测试
+python -m pytest
+
+# 带覆盖率
+python -m pytest --cov=src/doc_gen --cov-fail-under=80
+```
+
+**测试文件命名**: `test_<module>.py`
+**测试类命名**: `Test<Feature>`
+**测试方法命名**: `test_<action>_<expected>_<context>`
+
+详细指南: [docs/TDD_WORKFLOW.md](../docs/TDD_WORKFLOW.md)
+
 ### Project Structure
 - One module per feature under `src/doc_gen/`
 - Public APIs typed with Pydantic models

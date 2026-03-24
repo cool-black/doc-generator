@@ -1,6 +1,6 @@
 # Project Status - DocGen
 
-**Last Updated**: 2026-03-23
+**Last Updated**: 2026-03-24
 **Current Phase**: MVP Complete (Milestone 3)
 **Status**: ✅ Functional - Can generate complete documents
 
@@ -125,18 +125,34 @@ src/doc_gen/
 
 | Test Type | Status | Coverage |
 |-----------|--------|----------|
-| Unit Tests | 🚧 Partial | ~40% |
+| Unit Tests | 🚧 Partial | 42% |
 | Integration Tests | 🚧 None | 0% |
 | E2E Tests | ✅ Manual | Tested with real generation |
 | CLI Tests | 🚧 Basic | Commands tested |
+| TDD Workflow | ✅ Configured | [docs/TDD_WORKFLOW.md](docs/TDD_WORKFLOW.md) |
 
 ### Test Files
 ```
 tests/
-├── conftest.py           ✅ Fixtures
-├── test_cli.py          🚧 Partial
-├── test_generator.py    🚧 Partial
-└── test_parser.py       🚧 Partial
+├── __init__.py                    ✅
+├── conftest.py                    ✅ Fixtures
+├── test_cli.py                    🚧 Partial
+├── test_config.py                 ✅
+├── test_content_generator.py      ✅ TDD examples
+├── test_models.py                 ✅
+└── test_storage.py                ✅
+```
+
+### TDD Configuration
+```bash
+# Run tests
+python scripts/test.py
+
+# With coverage check (80% target)
+python scripts/test.py --cov
+
+# Watch mode
+python scripts/test.py --watch
 ```
 
 ---
@@ -212,7 +228,8 @@ pytest, mypy, ruff
 - [x] Basic error handling
 
 ### Quality Gates (Pending)
-- [ ] > 80% test coverage
+- [ ] TDD workflow established ✅
+- [ ] > 80% test coverage (current: 42%)
 - [ ] Hallucination rate < 5%
 - [ ] Document completeness > 95%
 - [ ] User satisfaction > 4/5
@@ -220,6 +237,15 @@ pytest, mypy, ruff
 ---
 
 ## Recent Activity
+
+### 2026-03-24
+- ✅ Configured TDD workflow with pytest
+  - Added `pytest.ini` with test configuration
+  - Created `scripts/test.py` for convenient test running
+  - Added TDD documentation ([docs/TDD_WORKFLOW.md](docs/TDD_WORKFLOW.md))
+  - Added TDD example tests in `tests/test_content_generator.py`
+  - Updated [CLAUDE.md](CLAUDE.md) with TDD guidelines
+- ✅ Updated project documentation
 
 ### 2026-03-23
 - ✅ Added multi-language support (简体中文, English, 日本語, 한국어, Français, Deutsch, Español)
