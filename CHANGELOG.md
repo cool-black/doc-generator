@@ -28,6 +28,24 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Enabled `check_same_thread=False` for multi-threaded access
 - Added concurrency tests in `tests/test_concurrency.py`
 
+#### Token Optimization (P1-4)
+- Added `token_compression` module for context compression
+  - `TokenBudget` - Manages token allocation across categories
+  - `compress_context()` - Compresses source materials to fit budget
+  - `truncate_text()` - Smart text truncation preserving sentences
+  - `CompressionStrategy` - TRUNCATE, HEAD_ONLY, SELECTIVE strategies
+- Added tests in `tests/test_token_compression.py`
+
+#### Project Version History (P1-5)
+- Added `VersionHistory` class for project snapshots
+  - `create_version()` - Save project snapshot with metadata
+  - `list_versions()` - List all versions for a project
+  - `restore_version()` - Rollback to specific version
+  - `compare_versions()` - Show differences between versions
+  - `delete_version()` - Remove version snapshot
+- Version snapshots stored in `projects/{id}/versions/`
+- Added tests in `tests/test_version_history.py`
+
 #### Configuration System
 - Added `.env` file support for LLM API configuration
   - `LLM_PROVIDER` - Provider selection (openai/anthropic/openrouter/openai_compatible)

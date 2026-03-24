@@ -39,6 +39,8 @@ DocGen is a functional CLI tool that generates knowledge documents through AI-po
 | **Error Recovery (Resume)** | ✅ Complete | P0 | P0-1: Resume from checkpoint |
 | **Config Validation** | ✅ Complete | P0 | P0-2: Better error messages |
 | **SQLite Concurrency** | ✅ Complete | P0 | P0-3: WAL mode, busy timeout |
+| **Token Optimization** | ✅ Complete | P1 | P1-4: Context compression |
+| **Version History** | ✅ Complete | P1 | P1-5: Snapshots and rollback |
 | **Hallucination Detection** | 🚧 Planned | P1 | Post-MVP feature |
 | **Web Crawling** | 🚧 Planned | P2 | Multi-source integration |
 | **Word Export** | 🚧 Planned | P2 | DOCX format output |
@@ -128,7 +130,7 @@ src/doc_gen/
 
 | Test Type | Status | Coverage |
 |-----------|--------|----------|
-| Unit Tests | ✅ Good | 52% |
+| Unit Tests | ✅ Good | 55% |
 | Integration Tests | 🚧 None | 0% |
 | E2E Tests | ✅ Manual | Tested with real generation |
 | CLI Tests | 🚧 Basic | Commands tested |
@@ -146,7 +148,9 @@ tests/
 ├── test_content_generator.py      ✅ TDD examples
 ├── test_models.py                 ✅
 ├── test_recovery.py               ✅ P0-1: Error recovery
-└── test_storage.py                ✅
+├── test_storage.py                ✅
+├── test_token_compression.py      ✅ P1-4: Token optimization
+└── test_version_history.py        ✅ P1-5: Version history
 ```
 
 ### TDD Configuration
@@ -249,7 +253,10 @@ pytest, mypy, ruff
   - P0-1: Error recovery with resume capability (checkpoint restore)
   - P0-2: Better configuration validation with helpful error messages
   - P0-3: SQLite concurrency controls (WAL mode, busy timeout)
-  - Added comprehensive tests for all P0 improvements
+- ✅ Implemented P1 improvements from Qwen evaluation
+  - P1-4: Token optimization with context compression strategies
+  - P1-5: Project version history with snapshots and rollback
+- ✅ Added comprehensive tests (77 tests, 55% coverage)
 - ✅ Configured TDD workflow with pytest
   - Added `pytest.ini` with test configuration
   - Created `scripts/test.py` for convenient test running
