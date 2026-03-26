@@ -18,6 +18,8 @@ Previous Chapter Summary:
 
 {source_materials}
 
+{review_feedback}
+
 Requirements:
 1. Write comprehensive content following the chapter outline structure
 2. Use the terminology glossary for consistent term usage

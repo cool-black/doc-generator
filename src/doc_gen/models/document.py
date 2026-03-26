@@ -21,6 +21,8 @@ class GenerationContext(BaseModel):
     audience: str = ""
     doc_type: str = "tutorial"
     language: str = "zh"
+    # Feedback from previous review attempts (used during retry)
+    review_feedback: str = ""
 
 
 class ChapterResult(BaseModel):

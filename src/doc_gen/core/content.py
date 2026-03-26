@@ -44,6 +44,7 @@ async def generate_chapter(
         terminology=terminology_str,
         preceding_context=ctx.preceding_context or "(First chapter)",
         source_materials=source_str,
+        review_feedback=ctx.review_feedback,
     )
 
     logger.debug("  Prompt length: %d chars", len(prompt))

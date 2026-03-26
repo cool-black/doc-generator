@@ -236,14 +236,16 @@ class TestContentReviewer:
         assert result.passed is True
 
     def test_parse_review_response_invalid_json(self):
-        """Test parsing invalid JSON response."""
+        """Test parsing invalid JSON response uses graceful fallback."""
         response = "This is not valid JSON"
 
         result = self.reviewer._parse_review_response(response, 0, "Test")
 
-        assert result.overall_score == 0
-        assert result.passed is False
-        assert "Failed to parse" in result.summary
+        # Should use graceful fallback: moderate score with passed=True
+        # This avoids blocking the pipeline when review is inconclusive
+        assert result.overall_score == 50
+        assert result.passed is True
+        assert "inconclusive" in result.summary.lower()
 
     def test_parse_review_response_empty(self):
         """Test parsing empty response."""

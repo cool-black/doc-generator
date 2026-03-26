@@ -182,6 +182,18 @@ class DocumentGenerator:
                             i + 1,
                             review_result.overall_score,
                         )
+                        # Pass review feedback to next attempt
+                        if review_result.issues:
+                            feedback_parts = [
+                                f"Previous review issues to address:"
+                            ]
+                            for issue in review_result.issues:
+                                feedback_parts.append(
+                                    f"- [{issue.severity.value.upper()}] {issue.category.value}: {issue.description}"
+                                )
+                                if issue.suggestion:
+                                    feedback_parts.append(f"  Suggestion: {issue.suggestion}")
+                            ctx.review_feedback = "\n".join(feedback_parts)
                         attempt += 1
                         continue
                     else:
