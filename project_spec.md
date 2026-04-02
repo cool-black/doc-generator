@@ -1,381 +1,354 @@
-# Project Specification - Document Generator
+# Project Specification - DocGen
 
-## 1. Technology Stack
+## 1. Purpose
 
-### 1.1 Core Technologies
-| Component | Technology | Version |
-|-----------|------------|---------|
-| Language | Python | 3.10+ |
-| CLI Framework | Click | ^8.1 |
-| Configuration | Pydantic + PyYAML | ^2.0 |
-| HTTP Client | httpx | ^0.25 |
-| Database | SQLite (stdlib) | - |
-| Async | asyncio (stdlib) | - |
+This document describes the technical architecture of DocGen as it exists today and the extension points needed for the next product phase.
 
-### 1.2 Document Processing
-| Purpose | Library |
-|---------|---------|
-| PDF Parsing | PyPDF2 |
-| Word Parsing | python-docx |
-| HTML Parsing | beautifulsoup4 |
-| Markdown | markdown |
-| Similarity | difflib (stdlib) |
+DocGen is a local-first Python CLI application that orchestrates:
 
-### 1.3 LLM Integration
-- OpenAI API (GPT-4, GPT-3.5)
-- Anthropic API (Claude)
-- OpenRouter (unified interface)
-- Support for custom base URLs (proxies)
+- project setup
+- outline generation
+- chapter generation
+- review and recovery
+- final export
 
-## 2. System Architecture
+The architecture should continue supporting that core flow while preparing for:
 
-### 2.1 Module Organization
+- requirement clarification before outline generation
+- partial rewrite and feedback persistence
+- source connectors
+- richer output structure and style control
 
-```
+## 2. Technology Stack
+
+| Area | Current Choice |
+|------|----------------|
+| Language | Python 3.9+ |
+| CLI | Click |
+| Configuration | Pydantic + YAML + `.env` |
+| HTTP | httpx |
+| Storage | SQLite + filesystem |
+| Async | asyncio |
+| Testing | pytest |
+
+## 3. Current System Structure
+
+```text
 src/doc_gen/
-├── __init__.py
-├── cli/                    # CLI interface layer
-│   ├── __init__.py
-│   ├── main.py            # Entry point and command registration
-│   ├── commands.py        # Command implementations
-│   └── prompts.py         # Interactive user prompts
-├── config/                 # Configuration management
-│   ├── __init__.py
-│   ├── models.py          # Pydantic config models
-│   └── loader.py          # Config file I/O
-├── core/                   # Core business logic
-│   ├── __init__.py
-│   ├── generator.py       # Main generation orchestrator
-│   ├── outline.py         # Outline generation
-│   ├── content.py         # Chapter content generation
-│   └── assembler.py       # Document assembly
-├── llm/                    # LLM client abstraction
-│   ├── __init__.py
-│   ├── client.py          # Unified LLM interface
-│   ├── providers.py       # Provider-specific implementations
-│   └── prompts/           # Prompt templates
-│       ├── outline.txt
-│       ├── chapter.txt
-│       └── review.txt
-├── sources/                # Content source processing
-│   ├── __init__.py
-│   ├── parser.py          # File parsing dispatcher
-│   ├── pdf_parser.py
-│   ├── docx_parser.py
-│   ├── txt_parser.py
-│   └── web_crawler.py     # (Post-MVP)
-├── quality/                # Quality assurance
-│   ├── __init__.py
-│   ├── reviewer.py        # Hallucination review agent
-│   ├── consistency.py     # Cross-chapter consistency
-│   ├── plagiarism.py      # Similarity detection
-│   └── disputes.py        # Conflict detection (Post-MVP)
-├── storage/                # Data persistence
-│   ├── __init__.py
-│   ├── project.py         # Project data models
-│   ├── repository.py      # Project CRUD operations
-│   └── database.py        # SQLite operations
-├── models/                 # Domain models
-│   ├── __init__.py
-│   ├── project.py         # Project state enums
-│   ├── outline.py         # Outline data structures
-│   └── document.py        # Document metadata
-└── utils/                  # Utilities
-    ├── __init__.py
-    ├── text.py            # Text processing utilities
-    ├── tokens.py          # Token counting/optimization
-    └── logger.py          # Logging setup
+├── cli/         # CLI entry points and prompt flow
+├── config/      # App configuration loading and validation
+├── core/        # Main generation pipeline
+├── llm/         # Provider abstraction and prompt loading
+├── models/      # Domain models
+├── sources/     # Source parsing
+├── storage/     # Repository and file persistence
+└── utils/       # Logging and shared helpers
 ```
 
-### 2.2 Data Models
+### 3.1 CLI Layer
 
-#### Project State Machine
+Primary files:
+
+- `src/doc_gen/cli/main.py`
+- `src/doc_gen/cli/commands.py`
+- `src/doc_gen/cli/prompts.py`
+- `run.py`
+
+Responsibilities:
+
+- expose CLI commands
+- manage interactive prompts
+- validate user-facing workflow transitions
+- invoke the generation pipeline
+
+### 3.2 Core Generation Layer
+
+Primary files:
+
+- `src/doc_gen/core/generator.py`
+- `src/doc_gen/core/outline.py`
+- `src/doc_gen/core/content.py`
+- `src/doc_gen/core/assembler.py`
+- `src/doc_gen/core/reviewer.py`
+
+Responsibilities:
+
+- orchestrate outline and content generation
+- build prompt context
+- manage chapter sequencing
+- trigger review and regeneration
+- assemble final output
+
+### 3.3 Storage Layer
+
+Primary files:
+
+- `src/doc_gen/storage/database.py`
+- `src/doc_gen/storage/repository.py`
+- `src/doc_gen/storage/project.py`
+- `src/doc_gen/storage/version_history.py`
+
+Responsibilities:
+
+- store project metadata
+- persist outlines, chapters, outputs, and version snapshots
+- support resume and project lookup
+
+### 3.4 LLM Layer
+
+Primary files:
+
+- `src/doc_gen/llm/client.py`
+- `src/doc_gen/llm/providers.py`
+- `src/doc_gen/llm/prompts/*.txt`
+
+Responsibilities:
+
+- normalize provider calls
+- load prompt templates
+- count tokens and manage retries
+
+## 4. Current Workflow
+
+### 4.1 Interactive Workflow
+
+`run.py` currently provides the recommended end-to-end path:
+
+1. validate environment and API
+2. collect project inputs
+3. create a project
+4. generate and confirm outline
+5. generate chapters
+6. export final Markdown
+
+### 4.2 Command Workflow
+
+Click commands support the same flow in smaller steps:
+
+- `init`
+- `new`
+- `list`
+- `status`
+- `generate`
+- `export`
+- `delete`
+
+## 5. Current Domain Model
+
+### 5.1 Project State
+
+DocGen uses a persisted project-status flow:
+
 ```python
-class ProjectStatus(Enum):
-    CREATED = "created"
-    OUTLINE_DRAFT = "outline_draft"
-    OUTLINE_CONFIRMED = "outline_confirmed"
-    GENERATING = "generating"
-    REVIEWING = "reviewing"
-    COMPLETED = "completed"
+CREATED
+OUTLINE_DRAFT
+OUTLINE_CONFIRMED
+GENERATING
+REVIEWING
+COMPLETED
 ```
 
-#### Project Configuration
-```python
-class ProjectConfig(BaseModel):
-    id: str  # UUID
-    name: str
-    created_at: datetime
-    status: ProjectStatus
+### 5.2 Current Project Inputs
 
-    # Requirements
-    domain: str
-    doc_type: DocumentType
-    audience: str
-    granularity: Granularity
+The current project model stores:
 
-    # Sources
-    user_files: List[Path]
-    web_sources: List[str]  # URLs (Post-MVP)
+- name
+- domain
+- document type
+- audience
+- granularity
+- language
+- uploaded files
+- style guide
+- terminology
+- output directory
 
-    # Generation settings
-    style_guide: Optional[StyleGuide]
-    terminology: Dict[str, TermDefinition]
-```
+## 6. Storage Model
 
-#### Generation Context
-```python
-class GenerationContext(BaseModel):
-    project_id: str
-    chapter_index: int
-    chapter_title: str
-    outline_summary: str
-    preceding_context: str  # Previous N paragraphs
-    terminology_glossary: Dict[str, str]
-    source_materials: List[str]
-```
+### 6.1 Current Persistence Pattern
 
-## 3. Data Flow
+- SQLite stores metadata and generation logs
+- Filesystem stores project content
 
-### 3.1 Initialization Flow
-```
-User: doc-gen init
-    ↓
-CLI: Check if config exists
-    ↓
-[No] → Prompt for API keys → Save to ~/.doc-gen/config.yaml
-[Yes] → Show current config → Prompt for changes
-    ↓
-Validate configuration → Success message
-```
+Typical structure:
 
-### 3.2 Project Creation Flow
-```
-User: doc-gen new <name>
-    ↓
-CLI: Create project directory structure
-    ↓
-Interactive Prompts:
-    - Domain/topic?
-    - Document type? [select]
-    - Target audience?
-    - Granularity? [select]
-    - Upload files? [optional]
-    ↓
-Save ProjectConfig → meta.json
-    ↓
-Display: Project created, run `doc-gen generate <name> --stage outline`
-```
-
-### 3.3 Outline Generation Flow
-```
-User: doc-gen generate <name> --stage outline
-    ↓
-Load ProjectConfig
-    ↓
-Parse uploaded files → Extract text content
-    ↓
-Build LLM prompt with:
-    - Project requirements
-    - Source excerpts (truncated)
-    ↓
-Call LLM → Generate outline
-    ↓
-Save outline.md
-    ↓
-Display outline → Prompt: Edit, Regenerate, or Confirm?
-    ↓
-[Confirm] → Update status to OUTLINE_CONFIRMED
-```
-
-### 3.4 Content Generation Flow
-```
-User: doc-gen generate <name> --stage content
-    ↓
-Verify status == OUTLINE_CONFIRMED
-    ↓
-Parse outline → List of chapters
-    ↓
-Initialize terminology glossary from outline
-    ↓
-For each chapter:
-    Build GenerationContext
-        ↓
-    Generate chapter content (LLM call)
-        ↓
-    Save to chapters/{index}_{slug}.md
-        ↓
-    Update terminology glossary
-        ↓
-    Update chapter summary
-    ↓
-Update status to COMPLETED
-    ↓
-Display: Chapters generated, run `doc-gen export <name>`
-```
-
-### 3.5 Document Assembly Flow
-```
-User: doc-gen export <name>
-    ↓
-Load all chapter files
-    ↓
-Generate Table of Contents from headings
-    ↓
-Assemble final.md:
-    - YAML frontmatter
-    - TOC
-    - Chapters in order
-    - References (if any)
-    ↓
-Save to output/final.md
-    ↓
-[Post-MVP] Convert to DOCX
-```
-
-## 4. Storage Structure
-
-### 4.1 File System Layout
-```
+```text
 ~/.doc-gen/
-├── config.yaml              # User configuration
+├── config.yaml
 └── data/
+    ├── db.sqlite
     └── projects/
         └── {project_id}/
-            ├── meta.json           # Project configuration
-            ├── outline.md          # Generated outline
-            ├── outline_v2.md       # User-edited outline
-            ├── sources/            # User-uploaded files
-            │   └── uploaded/
-            ├── cache/              # Parsed source content
-            │   └── extracted.json
-            ├── chapters/           # Generated chapters
-            │   ├── 01_introduction.md
-            │   ├── 02_concepts.md
-            │   └── ...
-            └── output/             # Final outputs
-                └── final.md
+            ├── meta.json
+            ├── outline.md
+            ├── chapters/
+            ├── output/
+            └── versions/
 ```
 
-### 4.2 SQLite Schema
-```sql
--- Projects table
-CREATE TABLE projects (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status TEXT NOT NULL,
-    config_json TEXT NOT NULL  -- Serialized ProjectConfig
-);
+### 6.2 Why This Split Works
 
--- Terminology table (shared across projects)
-CREATE TABLE terminology (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id TEXT,
-    term TEXT NOT NULL,
-    definition TEXT,
-    aliases TEXT,  -- JSON array
-    FOREIGN KEY (project_id) REFERENCES projects(id)
-);
+- metadata queries stay simple
+- generated content remains easy to inspect and edit
+- project recovery and snapshots are straightforward
 
--- Generation logs for debugging
-CREATE TABLE generation_logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id TEXT,
-    chapter_index INTEGER,
-    prompt_tokens INTEGER,
-    completion_tokens INTEGER,
-    duration_ms INTEGER,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id)
-);
+## 7. Architectural Gaps for the Next Phase
+
+The current codebase supports sequential document generation well, but the next product direction introduces several new technical needs.
+
+### 7.1 Requirement Clarification Layer
+
+Needed because outline generation should no longer depend only on the initial topic and project fields.
+
+Additions needed:
+
+- interview-style prompt flow before outline generation
+- a persisted `design_brief`
+- summary confirmation before drafting the outline
+
+Recommended shape:
+
+```text
+project/
+├── design_brief.json
+├── outline.md
+└── ...
 ```
 
-## 5. LLM Integration
+### 7.2 Outline Control Model
 
-### 5.1 Provider Interface
-```python
-class LLMProvider(ABC):
-    @abstractmethod
-    async def generate(
-        self,
-        prompt: str,
-        max_tokens: Optional[int] = None,
-        temperature: float = 0.7,
-    ) -> str: ...
+Needed to avoid bloated outlines.
 
-    @abstractmethod
-    def count_tokens(self, text: str) -> int: ...
+Additions needed:
+
+- chapter-count limit
+- depth preference
+- selected learning modules
+- preferred document mode such as compact, standard, in-depth
+
+Recommended model additions:
+
+- `outline_constraints`
+- `selected_modules`
+- `learning_mode`
+
+### 7.3 Revision and Feedback Model
+
+Needed to support partial rewrite and persistent editorial guidance.
+
+Additions needed:
+
+- section targeting
+- structured feedback persistence
+- rewrite history
+- feedback-aware future generation
+
+Recommended storage additions:
+
+```text
+project/
+├── editor_feedback.json
+├── revisions/
+└── section_index.json
 ```
 
-### 5.2 Prompt Template System
-- Templates stored as text files in `llm/prompts/`
-- Variable substitution using `{placeholder}` syntax
-- Support for partial templates (headers, footers)
+Recommended model additions:
 
-### 5.3 Error Handling
-- Timeout: 60s default, configurable
-- Retry: Exponential backoff, max 3 retries
-- Fallback: Secondary provider if primary fails
-- Error messages: User-friendly, suggest actions
+- `editorial_rules`
+- `rewrite_requests`
+- `section_metadata`
 
-## 6. Quality Assurance Pipeline
+### 7.4 Source Connector Architecture
 
-### 6.1 MVP: Basic Consistency
-- Terminology glossary maintained across chapters
-- Chapter summaries carried forward for context
-- Manual user review at outline stage
+Needed for web sources and more controlled external ingestion.
 
-### 6.2 Post-MVP: Automated Review
+Current `sources/` code mainly focuses on parsing local files.
+
+Recommended expansion:
+
+```text
+src/doc_gen/sources/
+├── parser.py
+├── connectors/
+│   ├── base.py
+│   ├── webpage.py
+│   ├── docs_site.py
+│   └── ...
+└── normalizers/
 ```
+
+Responsibilities:
+
+- fetch source content
+- normalize and clean content
+- attach source metadata
+- provide reusable extracted chunks to generation
+
+### 7.5 Output Structure and Style Layer
+
+Needed for tutorial-style semantic blocks and template-aware formatting.
+
+Recommended future additions:
+
+- semantic block model
+- style profile extracted from a template or exemplar
+- richer final document assembler
+
+Potential modules:
+
+```text
+src/doc_gen/output/
+├── semantic_blocks.py
+├── style_profile.py
+└── formatters.py
+```
+
+## 8. Target Future Flow
+
+```text
+Project Setup
+  ↓
+Requirement Clarification
+  ↓
+Design Brief Confirmation
+  ↓
+Outline Generation with Constraints
+  ↓
+Outline Confirmation
+  ↓
 Chapter Generation
-    ↓
-Hallucination Review Agent
-    ↓
-[Pass] → Continue
-[Fail] → Regenerate with feedback (max 3x)
-    ↓
-Consistency Check (cross-chapter)
-    ↓
-Plagiarism Check (vs sources)
-    ↓
-Mark as complete
+  ↓
+Review / Rewrite / Feedback Write-Back
+  ↓
+Final Assembly and Export
 ```
 
-## 7. CLI Command Reference
+## 9. Engineering Priorities
 
-| Command | Arguments | Description |
-|---------|-----------|-------------|
-| `init` | - | Initialize configuration |
-| `new` | `<name>` | Create new project |
-| `open` | `<name>` | Open existing project |
-| `list` | - | List all projects |
-| `status` | `<name>` | Show project status |
-| `generate` | `<name> --stage {outline\|content\|all}` | Generate content |
-| `export` | `<name> --format {md\|docx}` | Export document |
-| `delete` | `<name>` | Delete project |
-| `config` | `[--get \| --set <key> <value>]` | Manage configuration |
+### 9.1 Near-Term
 
-## 8. Development Setup
+- keep current generation flow stable
+- avoid regressions while introducing clarification and rewrite support
+- preserve local-first project storage
 
-### 8.1 Installation
-```bash
-git clone <repo>
-cd document-gen
-pip install -e ".[dev]"
-doc-gen init
-```
+### 9.2 Mid-Term
 
-### 8.2 Testing
-```bash
-pytest tests/           # Unit tests
-pytest tests/e2e/      # End-to-end tests
-pytest --cov=src       # Coverage report
-```
+- formalize source connectors
+- formalize revision metadata
+- improve assembly for tutorial-style content blocks
 
-### 8.3 Project Structure Convention
-- One module per feature
-- Public APIs typed with Pydantic models
-- Private helpers prefixed with `_`
-- Tests mirror source structure
+### 9.3 Documentation Rule
+
+This file should describe implementation structure and extension design.
+
+It should not become:
+
+- a changelog
+- a status dashboard
+- a product strategy memo
+
+Those concerns belong in:
+
+- `CHANGELOG.md`
+- `PROJECT_STATUS.md`
+- `docs/PRODUCT_STRATEGY.md`

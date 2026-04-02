@@ -55,9 +55,15 @@ class DocumentGenerator:
         """Generate and save outline for a project."""
         # Load source materials
         source_texts = self._load_sources(project)
+        design_brief = self.storage.load_design_brief(project.id)
 
         # Generate outline
-        outline_md, response = await generate_outline(project, self.llm, source_texts)
+        outline_md, response = await generate_outline(
+            project,
+            self.llm,
+            source_texts,
+            design_brief=design_brief,
+        )
 
         # Save outline
         self.storage.save_outline(project.id, outline_md)
@@ -86,17 +92,6 @@ class DocumentGenerator:
         outline = parse_outline_markdown(outline_md)
         source_texts = self._load_sources(project)
 
-        # Check for existing chapters to support resume
-        last_generated = self.storage.get_last_generated_chapter(project.id)
-        start_index = last_generated if last_generated >= 0 else 0
-
-        if start_index > 0:
-            logger.info(
-                "Resuming generation from chapter %d (%d already completed)",
-                start_index + 1,
-                start_index,
-            )
-
         # Update status
         project.status = ProjectStatus.GENERATING
         self.repo.update(project)
@@ -111,20 +106,30 @@ class DocumentGenerator:
         chapter_files: list[str] = []
         preceding_summary = ""
         existing_chapters = self.storage.load_chapters(project.id)
+        generated_indices = self.storage.get_generated_chapter_indices(project.id)
 
         # Populate chapter_files from existing chapters
         for filename, _ in existing_chapters:
             chapter_path = self.storage.project_dir(project.id) / "chapters" / filename
             chapter_files.append(str(chapter_path))
 
-        # Restore preceding_summary from last generated chapter
-        if existing_chapters and start_index > 0:
+        if generated_indices:
+            logger.info(
+                "Resuming generation with %d existing chapter(s): %s",
+                len(generated_indices),
+                ", ".join(str(i) for i in sorted(generated_indices)),
+            )
+
+        # Restore preceding_summary from the latest generated chapter we can find
+        if existing_chapters:
             last_chapter_content = existing_chapters[-1][1]
             preceding_summary = self._extract_summary(last_chapter_content)
 
         for i, section in enumerate(outline.sections):
-            # Skip already generated chapters
-            if i < start_index:
+            chapter_number = i + 1
+
+            # Skip only chapters that already have a saved file.
+            if chapter_number in generated_indices:
                 logger.debug("Skipping chapter %d (already generated)", i + 1)
                 continue
             # Build sub-outline for this chapter

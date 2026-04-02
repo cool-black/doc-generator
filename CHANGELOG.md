@@ -6,6 +6,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased] - 2026-03-24
 
+### Documentation
+
+- Refocused core product documentation around technical tutorials, learning guides, and technical manuals
+- Rewrote `README.md`, `product_spec.md`, `project_spec.md`, and `PROJECT_STATUS.md`
+- Added `docs/DOCUMENTATION_MAP.md` to define documentation roles and structure
+- Added `documents/README.md` to distinguish sample outputs from project-governance docs
+- Added `specs/` documentation workflow with reusable template and first spec for design-brief clarification
+
 ### Added
 
 #### Error Recovery (P0-1)

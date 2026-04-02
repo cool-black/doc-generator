@@ -7,7 +7,7 @@ import re
 from doc_gen.llm.client import LLMClient, LLMResponse
 from doc_gen.llm.providers import load_prompt
 from doc_gen.models.outline import Outline, OutlineSection
-from doc_gen.models.project import ProjectConfig
+from doc_gen.models.project import DesignBrief, ProjectConfig
 from doc_gen.utils.logger import get_logger
 
 logger = get_logger("outline")
@@ -17,6 +17,7 @@ async def generate_outline(
     config: ProjectConfig,
     llm: LLMClient,
     source_texts: list[str] | None = None,
+    design_brief: DesignBrief | None = None,
 ) -> tuple[str, LLMResponse]:
     """Generate a document outline from project config.
 
@@ -26,6 +27,11 @@ async def generate_outline(
     if source_texts:
         combined = "\n\n---\n\n".join(source_texts[:5])  # limit to 5 sources
         source_context = f"Reference Materials:\n{combined[:3000]}"
+    design_brief_context = (
+        design_brief.to_prompt_context()
+        if design_brief
+        else "No confirmed design brief provided."
+    )
 
     prompt = load_prompt(
         "outline",
@@ -34,6 +40,7 @@ async def generate_outline(
         audience=config.audience,
         granularity=config.granularity.value.replace("_", " "),
         language=config.language.value,
+        design_brief_context=design_brief_context,
         source_context=source_context,
     )
 

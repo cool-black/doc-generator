@@ -1,198 +1,316 @@
-# Product Specification - Document Generator
+# Product Specification - DocGen
 
 ## 1. Product Definition
 
-### 1.1 What is it?
-A command-line tool that generates comprehensive knowledge documents through:
-- Multi-turn conversational requirement gathering
-- Integration of user-uploaded sources and web-crawled content
-- AI-powered content generation with quality assurance
+### 1.1 What is DocGen
+
+DocGen is a CLI product for generating structured technical tutorials, learning guides, and technical manuals through an AI-assisted workflow.
+
+It is designed to support the full content-production path:
+
+1. clarify the user goal
+2. design an appropriate outline
+3. generate long-form content chapter by chapter
+4. revise selected parts with user feedback
+5. export a usable final document
 
 ### 1.2 Target Users
-- Technical writers seeking to accelerate documentation creation
-- Educators creating course materials
-- Developers writing tutorials or API documentation
-- Knowledge workers consolidating research into structured documents
 
-### 1.3 Value Proposition
-**Before**: Hours spent researching, outlining, writing, and formatting documents
-**After**: Minutes of conversation → structured, sourced, original document
+- Developers writing tutorials or internal technical guides
+- Technical writers creating structured manuals
+- Educators creating learning material
+- Knowledge workers converting scattered reference material into teachable documents
 
-## 2. Feature Requirements
+### 1.3 Primary Use Cases
 
-### 2.1 Core Features (MVP)
+- Generate a beginner-friendly tutorial for a technical topic
+- Generate a structured learning guide for self-study
+- Generate a technical manual from user requirements and source files
+- Build a first draft, then iteratively revise chapters and sections
 
-#### F1: Interactive Project Creation
-- **Description**: CLI wizard guides user through requirement clarification
-- **Inputs**: Domain/topic, document type, target audience, granularity
-- **Outputs**: Project configuration saved to local storage
-- **Acceptance Criteria**:
-  - All required fields collected through prompts
-  - Optional file upload supported
-  - Configuration validated before saving
+### 1.4 Value Proposition
+
+Before DocGen:
+
+- users gather requirements manually
+- create a structure manually
+- repeatedly prompt an LLM for disconnected sections
+- manually fix consistency, formatting, and flow
+
+After DocGen:
+
+- users go through a guided workflow
+- DocGen proposes a controlled outline
+- content is generated as a coherent document
+- later revisions can target only the parts that need work
+
+## 2. Product Focus
+
+### 2.1 In-Scope Document Types
+
+- Technical Tutorial
+- Learning Guide
+- Technical Manual
+
+### 2.2 De-emphasized for Now
+
+- Academic paper generation
+- Broad "knowledge handbook" positioning
+- General-purpose writing or marketing content
+
+### 2.3 Product Principles
+
+- Focus on learning-friendly output rather than encyclopedic coverage
+- Prefer controlled scope over oversized outlines
+- Treat generation as an iterative workflow, not a one-shot action
+- Keep the product local-first and usable from the CLI
+
+## 3. Core Product Problems to Solve
+
+### 3.1 Requirement Clarification
+
+The product must avoid generating an outline from only a topic string.
+
+Before outlining, it should clarify:
+
+- user goal
+- audience level
+- expected depth
+- practical vs conceptual emphasis
+- desired content modules
+- expected document size
+
+### 3.2 Outline Control
+
+The outline should not default to maximum coverage.
+
+It should be constrained by:
+
+- chapter count
+- depth
+- learning objective
+- selected modules
+- document length target
+
+### 3.3 Iterative Revision
+
+Users need to revise specific sections instead of rerunning full generation.
+
+The product must support:
+
+- chapter rewrite
+- section rewrite
+- user feedback persistence
+- feedback-aware future generation
+
+### 3.4 Learning-Oriented Content Structure
+
+Tutorial documents should include optional modules such as:
+
+- learning roadmap
+- key concepts
+- worked examples
+- common mistakes
+- interview highlights
+- recap / summary
+- glossary
+- further reading
+
+### 3.5 Source Integration
+
+The product should progressively support:
+
+- local file sources
+- web pages
+- official documentation sites
+- blogs and GitHub docs
+- more complex sources later, such as public-platform articles
+
+### 3.6 Richer Presentation
+
+Output should evolve beyond flat text and support tutorial-style semantic blocks:
+
+- key point
+- note
+- warning
+- example
+- interview tip
+- diagram placeholder
+- chapter summary
+
+## 4. Functional Requirements
+
+### 4.1 Current Core Workflow
+
+#### F1: Project Setup
+
+- Collect topic, document type, audience, granularity, language
+- Optionally ingest user files
+- Persist project metadata locally
 
 #### F2: Outline Generation
-- **Description**: Generate hierarchical document structure with user confirmation
-- **Inputs**: Project configuration, optional user files
-- **Outputs**: Markdown outline with sections and subsections
-- **Acceptance Criteria**:
-  - Outline includes 3 levels of hierarchy
-  - User can edit outline before proceeding
-  - Outline persisted for subsequent stages
 
-#### F3: Content Generation
-- **Description**: Generate document chapters sequentially
-- **Inputs**: Approved outline, source materials
-- **Outputs**: Individual chapter files in Markdown
-- **Acceptance Criteria**:
-  - Each chapter follows outline structure
-  - Technical terms used consistently
-  - Content written for specified audience level
+- Generate a draft outline from project context
+- Show it to the user
+- Require confirmation before continuing
 
-#### F4: Document Assembly
-- **Description**: Combine chapters into final document with TOC
-- **Inputs**: Generated chapters
-- **Outputs**: Complete Markdown document
-- **Acceptance Criteria**:
-  - Auto-generated table of contents
-  - Proper heading hierarchy
-  - Internal cross-references resolved
+#### F3: Chapter Generation
 
-### 2.2 Advanced Features (Post-MVP)
+- Generate chapters sequentially
+- Preserve context across chapters
+- Maintain terminology consistency
 
-#### F5: Hallucination Detection
-- Real-time chapter review by sub-agent
-- Automatic regeneration on detected issues
-- Max retry limit with user notification
+#### F4: Export
 
-#### F6: Multi-Source Integration
-- Web crawling with configurable depth
-- Source authority ranking
-- Conflict detection across sources
+- Assemble chapters into a final Markdown document
+- Generate a table of contents
+- Export to a project output path
 
-#### F7: Dispute Report Generation
-- Automated identification of contradictory information
-- Standalone report with recommended resolutions
-- User-guided conflict resolution
+### 4.2 Next-Stage Requirements
 
-#### F8: Plagiarism Detection
-- Segment-level similarity analysis using difflib
-- Automatic paraphrasing suggestions
-- Originality scoring
+#### F5: Requirement Clarification Workflow
 
-#### F9: Partial Regeneration
-- Selective chapter/section rewrite
-- Context preservation for consistency
-- User feedback integration
+- Ask multi-turn questions before outline generation
+- Produce a tutorial-design summary
+- Require confirmation of that summary before formal outline generation
 
-#### F10: Word Export
-- Convert Markdown to DOCX
-- Mermaid diagram rendering
-- Styled document output
+Acceptance criteria:
 
-## 3. Milestone Planning
+- outline generation is based on more than topic alone
+- summary captures user goal, audience, scope, and selected modules
+- users can revise the summary before continuing
 
-### Milestone 1: Foundation (Week 1-2)
-**Goal**: Working CLI with configuration system
+#### F6: Outline Control
 
-**Tasks**:
-- [ ] Project scaffolding and dependency setup
-- [ ] Configuration system (YAML + Pydantic)
-- [ ] LLM client abstraction with provider support
-- [ ] Basic CLI commands: `init`, `new`, `list`
-- [ ] Local storage structure implementation
+- Allow chapter count and scope constraints
+- Allow users to toggle optional content modules
+- Offer compact, standard, and in-depth tutorial modes
 
-**Deliverable**: User can run `doc-gen init` and configure API keys
+Acceptance criteria:
 
-### Milestone 2: Outline Stage (Week 3)
-**Goal**: Interactive project creation and outline generation
+- generated outlines are shorter and more purposeful
+- optional modules are included only when selected
+- depth mode affects chapter breadth and structure
 
-**Tasks**:
-- [ ] Interactive requirement collection wizard
-- [ ] File upload and parsing (txt, md)
-- [ ] Outline generation prompt engineering
-- [ ] Outline editing and confirmation flow
-- [ ] Project state management
+#### F7: Partial Rewrite
 
-**Deliverable**: User can create project and generate/confirm outline
+- Rewrite one chapter or one section
+- Support rewrite intents such as simplify, expand, add examples, make more beginner-friendly
 
-### Milestone 3: Content Generation (Week 4)
-**Goal**: End-to-end document generation
+Acceptance criteria:
 
-**Tasks**:
-- [ ] Chapter generation implementation
-- [ ] Sequential processing pipeline
-- [ ] Terminology consistency (basic)
-- [ ] Document assembly with TOC
-- [ ] Markdown output formatting
+- user can target a chapter without regenerating the full document
+- rewritten content reuses project context and terminology
+- rewrite history is persisted
 
-**Deliverable**: MVP complete - full document generation from conversation
+#### F8: Feedback Write-Back
 
-### Milestone 4: Quality Assurance (Week 5-6)
-**Goal**: Hallucination detection and content verification
+- Persist user feedback as structured editorial rules
+- Apply those rules in later rewrites and future generation
 
-**Tasks**:
-- [ ] Sub-agent review system design
-- [ ] Hallucination detection prompts
-- [ ] Automatic regeneration loop
-- [ ] Quality metrics tracking
+Acceptance criteria:
 
-**Deliverable**: Generated content passes automated quality checks
+- user feedback survives across sessions
+- later chapters can inherit updated writing guidance
+- terminology and style changes propagate consistently
 
-### Milestone 5: Source Integration (Week 7-8)
-**Goal**: Web crawling and multi-source support
+#### F9: Learning Modules
 
-**Tasks**:
-- [ ] Web crawler implementation
-- [ ] Source authority ranking
-- [ ] Conflict detection algorithm
-- [ ] Dispute report generation
-- [ ] Enhanced file parsing (pdf, docx)
+- Support optional learning roadmap
+- Support optional interview highlights
+- Support optional common mistakes and recap sections
 
-**Deliverable**: System integrates multiple sources with conflict reporting
+Acceptance criteria:
 
-### Milestone 6: Polish & Export (Week 9)
-**Goal**: Professional output formats
+- users can choose modules at project setup or outline stage
+- generated structure reflects selected tutorial components
+- content modules improve tutorial usability without bloating the whole document
 
-**Tasks**:
-- [ ] Mermaid diagram generation
-- [ ] Word export implementation
-- [ ] Partial regeneration support
-- [ ] Plagiarism detection integration
-- [ ] Documentation and examples
+#### F10: Source Connectors
 
-**Deliverable**: Production-ready tool with full feature set
+- Ingest stable web sources first
+- Add connector architecture for future expansion
 
-## 4. Success Metrics
+Acceptance criteria:
 
-### 4.1 Quality Metrics
-- Hallucination rate < 5% (detected by review agent)
-- User satisfaction score on generated outlines > 4/5
-- Document completeness (outline coverage) > 95%
+- users can add URL-based sources
+- extracted content becomes part of the generation context
+- future source integrations do not require redesigning the whole pipeline
 
-### 4.2 Performance Metrics
-- Outline generation < 30 seconds
-- Chapter generation < 2 minutes per 1000 words
-- End-to-end document generation < 10 minutes (10-page doc)
+#### F11: Style Templates
 
-### 4.3 Usability Metrics
-- Time from `new` to first outline < 5 minutes
-- Configuration success rate on first attempt > 90%
-- User can complete full flow without documentation
+- Allow users to provide reference documents or formatting examples
+- Learn style preferences from a template or exemplar
 
-## 5. Non-Goals (Out of Scope)
+Acceptance criteria:
+
+- output structure can adapt to a chosen style reference
+- template preference influences headings and semantic blocks
+- style guidance is project-scoped
+
+## 5. Non-Goals for the Near Term
 
 - Real-time collaborative editing
-- Web-based UI (staying CLI-only)
-- Plugin/extension system
-- Automatic publication to external platforms
-- Translation to other languages (English only for MVP)
+- Web app as the primary product surface
+- CMS publishing integrations
+- Broad consumer writing use cases
+- Fully automatic internet-scale crawling
 
-## 6. Risks and Mitigations
+## 6. Success Metrics
+
+### 6.1 Product Quality
+
+- Outline approval rate improves after clarification step
+- Average outline length decreases without reducing usefulness
+- Users can revise specific sections without regenerating the entire document
+- Tutorial outputs include more learning-oriented structure
+
+### 6.2 Workflow Quality
+
+- Users can complete first draft generation end-to-end from the CLI
+- Resume support works reliably after interruption
+- Feedback persists across later generation steps
+
+### 6.3 Technical Quality
+
+- Stable local storage for project state
+- Predictable generation flow and status transitions
+- Reliable tests for generation, recovery, and review paths
+
+## 7. Roadmap
+
+### v0.2: Focus and Outline Control
+
+- Narrow product positioning to tutorials, learning guides, and manuals
+- Add requirement clarification before outlining
+- Add tutorial-design summary confirmation
+- Add outline length and module controls
+
+### v0.3: Revision Loop
+
+- Add chapter rewrite
+- Add section rewrite
+- Add persistent user feedback
+- Feed editorial rules into later generation
+
+### v0.4: Learning-First Output
+
+- Add learning roadmap module
+- Add interview highlights module
+- Add recap, glossary, and common mistakes modules
+
+### v0.5: Sources and Style
+
+- Add stable web-source ingestion
+- Design connector-based source architecture
+- Add style-reference or template-driven generation
+
+## 8. Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| LLM API costs high | Medium | Token optimization, user-configurable models |
-| Hallucination undetected | High | Multi-layer review, user confirmation points |
-| Copyright concerns | High | Paraphrasing pipeline, similarity detection |
-| Source quality variation | Medium | Authority ranking, user override capability |
+| Outline still too large | High | Add explicit scope controls and summary confirmation |
+| Revision workflow becomes inconsistent | High | Persist rewrite history and editorial rules |
+| Source quality varies | Medium | Start with stable sources and connector boundaries |
+| Tutorial output feels generic | Medium | Add semantic blocks and style-reference support |
+| Product scope expands again | High | Keep positioning focused on tutorial and learning documents |

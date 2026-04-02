@@ -58,6 +58,30 @@ class StyleGuide(BaseModel):
     person: str = "third"
 
 
+class DesignBrief(BaseModel):
+    goal_type: str = "systematic_guide"
+    audience_level: str = "intermediate"
+    learning_mode: str = "standard"
+    focus_mode: str = "balanced"
+    selected_modules: list[str] = Field(default_factory=list)
+    scope_guidance: str = ""
+    notes: str = ""
+
+    def to_prompt_context(self) -> str:
+        modules = ", ".join(self.selected_modules) if self.selected_modules else "none"
+        lines = [
+            f"- Goal Type: {self.goal_type}",
+            f"- Audience Level: {self.audience_level}",
+            f"- Learning Mode: {self.learning_mode}",
+            f"- Focus Mode: {self.focus_mode}",
+            f"- Selected Modules: {modules}",
+            f"- Scope Guidance: {self.scope_guidance or 'not specified'}",
+        ]
+        if self.notes:
+            lines.append(f"- Notes: {self.notes}")
+        return "\n".join(lines)
+
+
 class ProjectConfig(BaseModel):
     id: str = Field(default_factory=lambda: uuid4().hex[:12])
     name: str

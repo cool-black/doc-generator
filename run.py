@@ -247,6 +247,7 @@ def step_create_project(project_name: str) -> bool:
 
 def step_generate_outline(project_name: str) -> bool:
     """Generate outline with user confirmation loop."""
+    from doc_gen.cli.commands import _ensure_design_brief
     from doc_gen.cli.prompts import prompt_outline_action
     from doc_gen.config.loader import ensure_data_dir, load_config
     from doc_gen.core.generator import DocumentGenerator
@@ -280,6 +281,7 @@ def step_generate_outline(project_name: str) -> bool:
     generator = DocumentGenerator(config, repo, storage)
 
     try:
+        _ensure_design_brief(storage, project)
         while True:
             print("  Generating outline (calling LLM)...")
             try:

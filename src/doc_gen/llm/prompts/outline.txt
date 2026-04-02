@@ -6,6 +6,9 @@ Target Audience: {audience}
 Granularity Level: {granularity}
 Language: {language}
 
+Design Brief:
+{design_brief_context}
+
 {source_context}
 
 Requirements:

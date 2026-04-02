@@ -12,7 +12,7 @@ from doc_gen.config.models import AppConfig, LLMConfig, LLMProvider
 def test_default_config():
     config = AppConfig()
     assert config.llm.provider == LLMProvider.OPENAI
-    assert config.llm.timeout == 120
+    assert config.llm.timeout == 300
     assert config.log_level == "INFO"
 
 

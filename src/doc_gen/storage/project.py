@@ -6,7 +6,7 @@ import json
 import shutil
 from pathlib import Path
 
-from doc_gen.models.project import ProjectConfig
+from doc_gen.models.project import DesignBrief, ProjectConfig
 
 
 class ProjectStorage:
@@ -48,6 +48,20 @@ class ProjectStorage:
             return None
         return path.read_text(encoding="utf-8")
 
+    def save_design_brief(self, project_id: str, brief: DesignBrief) -> Path:
+        path = self.project_dir(project_id) / "design_brief.json"
+        path.write_text(brief.model_dump_json(indent=2), encoding="utf-8")
+        return path
+
+    def load_design_brief(self, project_id: str) -> DesignBrief | None:
+        path = self.project_dir(project_id) / "design_brief.json"
+        if not path.exists():
+            return None
+        return DesignBrief.model_validate_json(path.read_text(encoding="utf-8"))
+
+    def has_design_brief(self, project_id: str) -> bool:
+        return (self.project_dir(project_id) / "design_brief.json").exists()
+
     def save_chapter(self, project_id: str, index: int, slug: str, content: str) -> Path:
         filename = f"{index:02d}_{slug}.md"
         path = self.project_dir(project_id) / "chapters" / filename
@@ -61,6 +75,20 @@ class ProjectStorage:
             return []
         files = sorted(chapters_dir.glob("*.md"))
         return [(f.name, f.read_text(encoding="utf-8")) for f in files]
+
+    def get_generated_chapter_indices(self, project_id: str) -> set[int]:
+        """Return the set of generated chapter numbers (1-based)."""
+        chapters_dir = self.project_dir(project_id) / "chapters"
+        if not chapters_dir.exists():
+            return set()
+
+        indices: set[int] = set()
+        for file_path in chapters_dir.glob("*.md"):
+            name = file_path.stem
+            parts = name.split("_", 1)
+            if parts and parts[0].isdigit():
+                indices.add(int(parts[0]))
+        return indices
 
     def get_last_generated_chapter(self, project_id: str) -> int:
         """Get the highest chapter index from existing chapter files.

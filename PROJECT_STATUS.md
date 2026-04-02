@@ -1,301 +1,128 @@
 # Project Status - DocGen
 
-**Last Updated**: 2026-03-24
-**Current Phase**: MVP Complete (Milestone 3)
-**Status**: ✅ Functional - Can generate complete documents
+**Last Updated**: 2026-04-02
+**Phase**: Usable MVP with product refocus underway
+**Product Direction**: Technical tutorials, learning guides, and technical manuals
 
----
+## 1. Executive Summary
 
-## Executive Summary
+DocGen is currently a functional CLI application that can generate complete Markdown documents through an outline-first, chapter-by-chapter workflow.
 
-DocGen is a functional CLI tool that generates knowledge documents through AI-powered content generation. The MVP is complete and has been successfully tested with real document generation ("大模型Agent入门指南" - 7 chapters).
+The current implementation is already usable for real document generation, with local project persistence, resume support, multi-provider LLM integration, and basic automated content review.
 
----
+The next major shift is product refocus rather than core pipeline rescue:
 
-## Completion Status
+- narrow the product around tutorial and learning-document generation
+- improve requirement clarification before outlining
+- add partial rewrite and feedback write-back
+- improve content structure, source ingestion, and output richness
 
-### Core Architecture
+## 2. Verified Current Baseline
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Configuration System | ✅ Complete | `.env` + `config.yaml` with Pydantic models |
-| LLM Client | ✅ Complete | Multi-provider, async, retry logic |
-| Storage Layer | ✅ Complete | SQLite + filesystem |
-| Data Models | ✅ Complete | Project, Outline, Document models |
-| CLI Interface | ✅ Complete | Both interactive and command-based |
+### Working End-to-End Flow
 
-### Features
+- Interactive runner via `python run.py`
+- Manual CLI workflow via `python -m doc_gen ...`
+- Project creation
+- Outline generation and confirmation
+- Sequential chapter generation
+- Markdown export
 
-| Feature | Status | Priority | Notes |
-|---------|--------|----------|-------|
-| **Project Creation** | ✅ Complete | P0 | Interactive wizard with domain/type/audience/language |
-| **File Upload** | ✅ Complete | P0 | txt, md, pdf, docx support |
-| **Outline Generation** | ✅ Complete | P0 | AI-generated with user confirmation |
-| **Content Generation** | ✅ Complete | P0 | Sequential chapter generation |
-| **Document Export** | ✅ Complete | P0 | Markdown with TOC |
-| **Custom Output Dir** | ✅ Complete | P1 | User-defined export location |
-| **Progress Logging** | ✅ Complete | P1 | Detailed generation progress |
-| **Language Selection** | ✅ Complete | P1 | Multi-language document generation (7 languages) |
-| **Error Recovery (Resume)** | ✅ Complete | P0 | P0-1: Resume from checkpoint |
-| **Config Validation** | ✅ Complete | P0 | P0-2: Better error messages |
-| **SQLite Concurrency** | ✅ Complete | P0 | P0-3: WAL mode, busy timeout |
-| **Token Optimization** | ✅ Complete | P1 | P1-4: Context compression |
-| **Version History** | ✅ Complete | P1 | P1-5: Snapshots and rollback |
-| **Hallucination Detection** | ✅ Complete | P1 | M4: ContentReviewer with auto-regeneration |
-| **Web Crawling** | 🚧 Planned | P2 | Multi-source integration |
-| **Word Export** | 🚧 Planned | P2 | DOCX format output |
-| **Partial Regeneration** | 🚧 Planned | P2 | Chapter-level rewrite |
-| **Plagiarism Check** | 🚧 Planned | P2 | difflib-based detection |
+### Verified Test Status
 
----
+Local verification on 2026-04-02:
 
-## Technical Implementation
+- `109 passed, 1 skipped`
 
-### Completed Components
+## 3. Implemented Capabilities
 
-```
-src/doc_gen/
-├── cli/
-│   ├── main.py           ✅ CLI entry point
-│   ├── commands.py       ✅ Command implementations
-│   └── prompts.py        ✅ Interactive prompts
-├── config/
-│   ├── models.py         ✅ Pydantic models
-│   └── loader.py         ✅ Config loading
-├── core/
-│   ├── generator.py      ✅ Main orchestrator
-│   ├── outline.py        ✅ Outline generation
-│   ├── content.py        ✅ Chapter generation
-│   ├── assembler.py      ✅ Document assembly
-│   └── reviewer.py       ✅ Quality review (M4)
-├── llm/
-│   ├── client.py         ✅ LLM client with retry
-│   ├── providers.py      ✅ Provider config
-│   └── prompts/          ✅ Prompt templates
-│       ├── outline.txt   ✅
-│       ├── chapter.txt   ✅
-│       └── review.txt    ✅ Quality review prompt
-├── models/
-│   ├── project.py        ✅ Project models
-│   ├── outline.py        ✅ Outline structures
-│   ├── document.py       ✅ Document models
-│   └── review.py         ✅ Review models (M4)
-├── storage/
-│   ├── database.py       ✅ SQLite operations
-│   ├── project.py        ✅ Filesystem storage
-│   └── repository.py     ✅ Project CRUD
-└── utils/
-    ├── logger.py         ✅ Logging setup
-    ├── text.py           ✅ Text utilities
-    └── tokens.py         ✅ Token counting
-```
+| Capability | Status | Notes |
+|------------|--------|-------|
+| Project creation | Complete | Interactive prompts and local persistence |
+| Outline generation | Complete | User-confirmed outline flow |
+| Chapter generation | Complete | Sequential generation with context carry-over |
+| Markdown export | Complete | TOC and final assembly |
+| Resume / recovery | Complete | Can continue from previously generated chapters |
+| Config validation | Complete | Better setup and error messaging |
+| Multi-language support | Complete | 7 supported languages |
+| Multi-provider LLM support | Complete | Includes OpenAI-compatible mode |
+| Content review | Complete | Automated review with regeneration loop |
+| Version history | Complete | Snapshot and rollback support |
+| Token optimization | Complete | Context compression utilities |
+| Web-source ingestion | Planned | Not yet implemented as a general feature |
+| Partial rewrite | Planned | Not yet implemented |
+| DOCX export | Planned | Not yet implemented |
+| Style-template support | Planned | Not yet implemented |
 
-### File Structure
+## 4. Documentation and Product Alignment Status
 
-```
-~/.doc-gen/
-├── config.yaml              # User configuration
-└── data/
-    ├── db.sqlite           # Project metadata
-    └── projects/
-        └── {project_id}/
-            ├── meta.json
-            ├── outline.md
-            ├── sources/uploaded/
-            ├── chapters/*.md
-            └── output/final.md
-```
+The repository now has a clearer product direction, but code and UX are still transitioning toward it.
 
----
+Alignment status:
 
-## Known Issues
+- Product strategy has been refreshed
+- Core entry documentation has been refreshed
+- Product and project specifications have been rewritten to match the new direction
+- Implementation still reflects the earlier broader product framing in some enums and prompts
 
-### Critical
-- None
+## 5. Known Gaps
 
-### Minor
-| Issue | Location | Impact | Fix Priority |
-|-------|----------|--------|--------------|
-| Unused import `asyncio` | generator.py:5 | Warning | Low |
-| Unused import `Outline` | generator.py:14 | Warning | Low |
-| Unused param `output_format` | generator.py:128 | Warning | Low |
+### Product Gaps
 
----
+- Outline generation can still become too long or too broad
+- Pre-outline clarification is still limited
+- No native partial rewrite workflow yet
+- No persistent editorial feedback model yet
+- No source-connector system for web content yet
+- Output style is still relatively plain
 
-## Testing Status
+### Engineering Gaps
 
-| Test Type | Status | Coverage |
-|-----------|--------|----------|
-| Unit Tests | ✅ Good | 55% → improving |
-| Integration Tests | 🚧 None | 0% |
-| E2E Tests | ✅ Manual | Tested with real generation |
-| CLI Tests | 🚧 Basic | Commands tested |
-| TDD Workflow | ✅ Configured | [docs/TDD_WORKFLOW.md](docs/TDD_WORKFLOW.md) |
-| Latest Test Run | ✅ 21/21 Passing | test_reviewer.py + test_status_management.py |
+- CLI commands do not yet expose rewrite-oriented operations
+- Source ingestion is still mostly file-parser based
+- Export format is Markdown-only
+- Architecture for style profiles and semantic tutorial blocks is not yet in place
 
-### Test Files
-```
-tests/
-├── __init__.py                    ✅
-├── conftest.py                    ✅ Fixtures
-├── test_cli.py                    🚧 Partial
-├── test_config.py                 ✅
-├── test_config_validation.py      ✅ P0-2: Config validation
-├── test_concurrency.py            ✅ P0-3: SQLite concurrency
-├── test_content_generator.py      ✅ TDD examples
-├── test_models.py                 ✅
-├── test_recovery.py               ✅ P0-1: Error recovery
-├── test_reviewer.py               ✅ M4: Quality review system
-├── test_status_management.py      ✅ Status management bug fix
-├── test_storage.py                ✅
-├── test_token_compression.py      ✅ P1-4: Token optimization
-└── test_version_history.py        ✅ P1-5: Version history
-```
+## 6. Near-Term Priorities
 
-### TDD Configuration
-```bash
-# Run tests
-python scripts/test.py
+### Priority 1: Product Focus
 
-# With coverage check (80% target)
-python scripts/test.py --cov
+- reflect tutorial / learning-guide positioning consistently in prompts and docs
+- reduce over-broad product framing
 
-# Watch mode
-python scripts/test.py --watch
-```
+### Priority 2: Better Outline Inputs
 
----
+- add requirement clarification workflow
+- add design brief confirmation
+- add outline constraints and optional module selection
 
-## Performance Metrics
+### Priority 3: Revision Loop
 
-### Observed (kimi-k2.5)
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Outline generation | < 30s | ~20s | ✅ |
-| Chapter generation | < 2min/1000w | ~1min/chapter | ✅ |
-| 10-page document | < 10min | ~8min (7 chapters) | ✅ |
+- add chapter rewrite
+- add section rewrite
+- persist editorial feedback
 
----
+### Priority 4: Richer Tutorial Output
 
-## Next Steps
+- add learning roadmap and interview-highlights modules
+- add semantic blocks such as notes, warnings, and summaries
 
-### Immediate (This Week)
-1. **Complete test coverage** - Add missing unit tests (target: 80%)
-2. **Add export format options** - At least DOCX support
+## 7. Current Risks
 
-### Short Term (Next 2 Weeks)
-4. ✅ ~~Hallucination detection~~ - ContentReviewer implemented
-5. **Web crawling** - Basic URL content extraction
-6. **Enhanced error recovery** - Better retry and resume
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Product scope drifts back to "generate anything" | High | Keep docs and roadmap focused |
+| New rewrite flow introduces state complexity | High | Add explicit revision metadata and tests |
+| Source support grows too fast | Medium | Add connector boundaries before broad ingestion |
+| Output quality feels generic | Medium | Add tutorial modules and style guidance |
 
-### Medium Term (Next Month)
-7. **Partial regeneration** - Chapter/section rewrite
-8. **Plagiarism detection** - difflib integration
-9. **Mermaid diagrams** - Auto-generate diagrams
+## 8. Recommended Next Milestone
 
----
+The next milestone should focus on product-fit improvements rather than broad feature expansion:
 
-## Resource Requirements
+1. requirement clarification before outlining
+2. outline scope control
+3. chapter/section rewrite
+4. feedback persistence
 
-### Current
-- **Python**: 3.9+
-- **Disk**: ~10MB + generated content
-- **API**: LLM provider (OpenAI/Anthropic/Kimi/etc.)
-
-### Development
-```bash
-# Dependencies
-pip install -e ".[dev]"
-
-# Dev tools
-pytest, mypy, ruff
-```
-
----
-
-## Documentation
-
-| Document | Status | Purpose |
-|----------|--------|---------|
-| `CLAUDE.md` | ✅ Current | Project guidance for Claude Code |
-| `product_spec.md` | ✅ Current | Product requirements |
-| `project_spec.md` | ✅ Current | Technical architecture |
-| `PLAN.md` | ⚠️ Outdated | Initial plan (superseded) |
-| `CHANGELOG.md` | ✅ Current | Change history |
-| `PROJECT_STATUS.md` | ✅ Current | This document |
-
----
-
-## Success Criteria
-
-### MVP (Complete)
-- [x] User can run `python run.py` end-to-end
-- [x] Generate outline with confirmation
-- [x] Generate content chapters
-- [x] Export to Markdown
-- [x] Basic error handling
-
-### Quality Gates (Pending)
-- [ ] TDD workflow established ✅
-- [ ] > 80% test coverage (current: 42%)
-- [ ] Hallucination rate < 5%
-- [ ] Document completeness > 95%
-- [ ] User satisfaction > 4/5
-
----
-
-## Recent Activity
-
-### 2026-03-24
-- ✅ Fixed status management bug
-  - `run.py` - Added project reload after outline confirmation ([run.py:302](run.py#L302))
-  - `commands.py` - Added project reload after outline confirmation ([commands.py:220](src/doc_gen/cli/commands.py#L220))
-  - Added `tests/test_status_management.py` with regression tests
-- ✅ Implemented M4: Quality Assurance - Hallucination Detection
-  - `ContentReviewer` class - Automated content review system
-  - `ReviewResult`, `QualityMetrics` models
-  - `review.txt` prompt template for LLM-based review
-  - Auto-regeneration loop (max 2 retries for failed reviews)
-  - Four quality criteria: factual accuracy, consistency, terminology, hallucination detection
-  - Review results saved to `projects/{id}/reviews/`
-  - Added `tests/test_reviewer.py` with comprehensive tests
-  - Integrated into `DocumentGenerator.generate_content()`
-- ✅ Implemented P0 improvements from Qwen evaluation
-  - P0-1: Error recovery with resume capability (checkpoint restore)
-  - P0-2: Better configuration validation with helpful error messages
-  - P0-3: SQLite concurrency controls (WAL mode, busy timeout)
-- ✅ Implemented P1 improvements from Qwen evaluation
-  - P1-4: Token optimization with context compression strategies
-  - P1-5: Project version history with snapshots and rollback
-- ✅ Added comprehensive tests (77 tests, 55% coverage)
-- ✅ Configured TDD workflow with pytest
-  - Added `pytest.ini` with test configuration
-  - Created `scripts/test.py` for convenient test running
-  - Added TDD documentation ([docs/TDD_WORKFLOW.md](docs/TDD_WORKFLOW.md))
-  - Added TDD example tests in `tests/test_content_generator.py`
-  - Updated [CLAUDE.md](CLAUDE.md) with TDD guidelines
-- ✅ Updated project documentation
-
-### 2026-03-23
-- ✅ Added multi-language support (简体中文, English, 日本語, 한국어, Français, Deutsch, Español)
-- ✅ Fixed TOC generation (proper chapter titles)
-- ✅ Fixed duplicate chapter numbering
-- ✅ Added custom output directory support
-- ✅ Added comprehensive logging
-- ✅ Fixed Windows event loop issues
-- ✅ Created CHANGELOG.md and PROJECT_STATUS.md
-
----
-
-## Blockers
-
-None currently.
-
----
-
-## Notes
-
-- Project is **ready for real use** with the interactive runner
-- API costs depend on model choice and document length
-- Recommend using cheaper models for outline, stronger models for content
-- Storage is local-only; future may add cloud sync option
+These four changes would most directly improve the usefulness of first-generation output and reduce the need for manual rewriting outside the tool.

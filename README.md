@@ -1,28 +1,60 @@
-# DocGen - Document Generator
+# DocGen
 
-A CLI tool that generates comprehensive knowledge documents through conversational interaction with AI.
+DocGen is a CLI tool for generating structured technical tutorials, learning guides, and manuals through an AI-assisted workflow.
 
-## Features
+It is designed for developers, technical writers, and educators who want more than a one-shot text generator. DocGen helps turn a topic and supporting materials into a complete document through guided setup, outline confirmation, chapter-by-chapter generation, and final export.
 
-- **Interactive Workflow**: Guided prompts for document requirements
-- **AI-Powered Outline**: Automatic structure generation with user confirmation
-- **Sequential Content Generation**: Chapter-by-chapter writing with context preservation
-- **Multi-Language Support**: Generate documents in 7 languages
-- **Custom Output Directory**: Export to your preferred location
-- **Multi-Source Support**: Upload reference files (txt, md, pdf, docx)
-- **Quality Assurance**: Terminology consistency across chapters
+## Positioning
+
+DocGen is not trying to be a generic "write anything" assistant.
+
+It is being shaped into a focused tool for:
+
+- technical tutorials
+- learning guides
+- technical manuals
+
+The product direction is to become an AI tutorial generation workflow that can:
+
+- clarify user intent before outlining
+- generate controlled, learning-friendly outlines
+- write long-form content with context continuity
+- support iterative revision and feedback incorporation
+- produce richer tutorial-style output over time
+
+## Current Capabilities
+
+- Interactive project setup through `python run.py`
+- Command-based workflow through `doc-gen`
+- Outline generation with user confirmation
+- Sequential chapter generation with context carry-over
+- Markdown export with table of contents
+- Local project storage with resume support
+- Multi-provider LLM support
+- Multi-language generation
+- Basic automated content review and regeneration
+
+## Planned Product Direction
+
+The next stage focuses on four themes:
+
+1. Requirement clarification before outline generation
+2. Better outline control to avoid overly long or unfocused structures
+3. Partial rewrite and feedback write-back
+4. Richer tutorial content modules and source integration
+
+For the full strategy, see [docs/PRODUCT_STRATEGY.md](docs/PRODUCT_STRATEGY.md).
 
 ## Quick Start
 
 ### Prerequisites
 
 - Python 3.9+
-- LLM API key (OpenAI, Anthropic, Moonshot/Kimi, etc.)
+- An LLM API key
 
 ### Installation
 
 ```bash
-# Clone and install
 git clone <repository>
 cd doc-generator
 pip install -e ".[dev]"
@@ -30,13 +62,7 @@ pip install -e ".[dev]"
 
 ### Configuration
 
-Create `.env` file from template:
-
-```bash
-copy .env.template .env
-```
-
-Edit `.env` with your API credentials:
+Create and edit `.env` with your provider settings:
 
 ```bash
 LLM_PROVIDER=openai_compatible
@@ -45,111 +71,85 @@ LLM_MODEL=kimi-k2.5
 LLM_BASE_URL=https://api.moonshot.cn/v1
 ```
 
-Supported providers: `openai`, `anthropic`, `openrouter`, `openai_compatible`
+Supported providers:
 
-### Usage
+- `openai`
+- `anthropic`
+- `openrouter`
+- `openai_compatible`
 
-#### Interactive Mode (Recommended)
+### Recommended Workflow
 
 ```bash
 python run.py
 ```
 
-This runs the complete workflow:
-1. API connection check
-2. Project setup (domain, type, audience, granularity, language)
-3. Custom output directory selection
-4. Outline generation with confirmation
-5. Content generation
-6. Automatic export
+The interactive runner walks through:
 
-#### Manual CLI
+1. API connection check
+2. Project setup
+3. Output directory selection
+4. Outline generation and confirmation
+5. Content generation
+6. Export
+
+### Manual CLI Workflow
 
 ```bash
-# Create project
 python -m doc_gen new my-tutorial
-
-# Generate outline
 python -m doc_gen generate my-tutorial --stage outline
-
-# Generate content
 python -m doc_gen generate my-tutorial --stage content
-
-# Export document
 python -m doc_gen export my-tutorial
-
-# List projects
 python -m doc_gen list
 ```
 
-## Document Types
-
-- **Tutorial**: Step-by-step learning materials
-- **Technical Manual**: Reference documentation
-- **Academic Paper**: Research-style document
-- **Knowledge Handbook**: Comprehensive topic coverage
-- **API Documentation**: Interface documentation
-- **Learning Guide**: Educational content
-
-## Supported Languages
-
-- 简体中文 (Chinese)
-- English
-- 日本語 (Japanese)
-- 한국어 (Korean)
-- Français (French)
-- Deutsch (German)
-- Español (Spanish)
-
 ## Output
 
-Generated documents include:
-- YAML frontmatter (metadata)
-- Table of Contents
-- Structured chapters with proper headings
-- Consistent terminology usage
+Generated documents currently export to Markdown and typically include:
 
-Default output: `~/.doc-gen/data/output/{project_name}.md`
+- YAML frontmatter
+- table of contents
+- structured chapters
+- terminology consistency across chapters
 
-Custom output: Specified during project creation
+Default output location:
 
-## Project Structure
-
-```
-~/.doc-gen/
-├── config.yaml              # App configuration
-└── data/
-    ├── db.sqlite           # Project metadata
-    └── projects/
-        └── {project_id}/
-            ├── meta.json
-            ├── outline.md
-            ├── chapters/
-            │   ├── 01_introduction.md
-            │   └── ...
-            └── output/
-                └── {project_name}.md
+```text
+~/.doc-gen/data/output/{project_name}.md
 ```
 
 ## Development
 
 ```bash
-# Run tests
-pytest tests/ -v
-
-# Type checking
+pytest -q
 mypy src/doc_gen
-
-# Linting
-ruff check src/
+ruff check src
 ```
+
+Current verified test result:
+
+- `109 passed, 1 skipped`
 
 ## Documentation
 
-- [product_spec.md](product_spec.md) - Product requirements
-- [project_spec.md](project_spec.md) - Technical architecture
-- [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current progress
-- [CHANGELOG.md](CHANGELOG.md) - Change history
+Start here:
+
+- [docs/DOCUMENTATION_MAP.md](docs/DOCUMENTATION_MAP.md) - full documentation map
+
+Core project documents:
+
+- [product_spec.md](product_spec.md) - product requirements and roadmap
+- [project_spec.md](project_spec.md) - technical architecture and extension design
+- [PROJECT_STATUS.md](PROJECT_STATUS.md) - current implementation status
+- [CHANGELOG.md](CHANGELOG.md) - change history
+
+Supporting documents:
+
+- [docs/PRODUCT_STRATEGY.md](docs/PRODUCT_STRATEGY.md) - strategy and product direction
+- [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) - next milestone engineering plan
+- [specs/README.md](specs/README.md) - change-level spec workflow
+- [docs/TDD_WORKFLOW.md](docs/TDD_WORKFLOW.md) - testing workflow
+- [docs/ERROR_LOG.md](docs/ERROR_LOG.md) - important implementation mistakes to avoid
 
 ## License
 

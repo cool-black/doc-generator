@@ -103,7 +103,6 @@ class TestGetLastGeneratedChapter:
 class TestResumeFromCheckpoint:
     """Test resuming document generation from a checkpoint."""
 
-    @pytest.mark.asyncio
     async def test_skip_already_generated_chapters(
         self,
         temp_dirs: tuple[Path, Path],
@@ -138,7 +137,7 @@ class TestResumeFromCheckpoint:
         outline_md = "# Test\n\n## Chapter One\n\n## Chapter Two\n\n## Chapter Three"
         storage.save_outline(project.id, outline_md)
 
-        generator = DocumentGenerator(app_config, repo, storage)
+        generator = DocumentGenerator(app_config, repo, storage, enable_review=False)
 
         with patch("doc_gen.core.generator.generate_chapter", new_callable=AsyncMock) as mock_gen:
             mock_gen.return_value = ChapterResult(
@@ -162,7 +161,6 @@ class TestResumeFromCheckpoint:
             assert first_call_ctx.chapter_index == 1  # Second section (0-indexed)
             assert first_call_ctx.chapter_title == "Chapter Two"
 
-    @pytest.mark.asyncio
     async def test_regenerate_from_scratch_if_no_chapters(
         self, temp_dirs: tuple[Path, Path], app_config: AppConfig
     ) -> None:
@@ -183,7 +181,7 @@ class TestResumeFromCheckpoint:
         outline_md = "# Test\n\n## Chapter One\n\n## Chapter Two"
         storage.save_outline(project.id, outline_md)
 
-        generator = DocumentGenerator(app_config, repo, storage)
+        generator = DocumentGenerator(app_config, repo, storage, enable_review=False)
 
         with patch("doc_gen.core.generator.generate_chapter", new_callable=AsyncMock) as mock_gen:
             mock_gen.return_value = ChapterResult(
@@ -206,7 +204,6 @@ class TestResumeFromCheckpoint:
 class TestContextRestoration:
     """Test that context is properly restored when resuming."""
 
-    @pytest.mark.asyncio
     async def test_preceding_summary_from_last_generated(
         self, temp_dirs: tuple[Path, Path], app_config: AppConfig
     ) -> None:
@@ -237,7 +234,7 @@ More details here."""
         outline_md = "# Test\n\n## Chapter One\n\n## Chapter Two"
         storage.save_outline(project.id, outline_md)
 
-        generator = DocumentGenerator(app_config, repo, storage)
+        generator = DocumentGenerator(app_config, repo, storage, enable_review=False)
 
         with patch("doc_gen.core.generator.generate_chapter", new_callable=AsyncMock) as mock_gen:
             mock_gen.return_value = ChapterResult(
@@ -258,3 +255,52 @@ More details here."""
             assert ctx.preceding_context != ""
             # Should contain summary/excerpt from chapter 1
 
+    async def test_generates_missing_chapter_when_existing_files_have_gaps(
+        self, temp_dirs: tuple[Path, Path], app_config: AppConfig
+    ) -> None:
+        """Should fill missing chapter gaps instead of skipping by max chapter index."""
+        base_dir, db_path = temp_dirs
+        db = Database(db_path)
+        repo = ProjectRepository(db)
+        storage = ProjectStorage(base_dir)
+
+        project = ProjectConfig(
+            id="test-gap",
+            name="Test Gap",
+            status=ProjectStatus.GENERATING,
+        )
+        repo.create(project)
+        storage.create_project_dirs(project.id)
+
+        storage.save_chapter(project.id, 1, "chapter-one", "Chapter 1")
+        storage.save_chapter(project.id, 3, "chapter-three", "Chapter 3")
+
+        outline_md = "# Test\n\n## Chapter One\n\n## Chapter Two\n\n## Chapter Three"
+        storage.save_outline(project.id, outline_md)
+
+        generator = DocumentGenerator(app_config, repo, storage, enable_review=False)
+
+        with patch("doc_gen.core.generator.generate_chapter", new_callable=AsyncMock) as mock_gen:
+            mock_gen.return_value = ChapterResult(
+                index=1,
+                title="Chapter Two",
+                content="Generated chapter 2",
+                summary="Summary",
+                prompt_tokens=100,
+                completion_tokens=50,
+                duration_ms=1000,
+                new_terms={},
+            )
+
+            await generator.generate_content(project)
+
+            assert mock_gen.call_count == 1
+            ctx = mock_gen.call_args[0][0]
+            assert ctx.chapter_index == 1
+            assert ctx.chapter_title == "Chapter Two"
+            chapters = storage.load_chapters(project.id)
+            assert [name for name, _ in chapters] == [
+                "01_chapter-one.md",
+                "02_chapter_two.md",
+                "03_chapter-three.md",
+            ]

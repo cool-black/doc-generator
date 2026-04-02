@@ -3,7 +3,13 @@
 import tempfile
 from pathlib import Path
 
-from doc_gen.models.project import DocumentType, Granularity, ProjectConfig, ProjectStatus
+from doc_gen.models.project import (
+    DesignBrief,
+    DocumentType,
+    Granularity,
+    ProjectConfig,
+    ProjectStatus,
+)
 from doc_gen.storage.database import Database
 from doc_gen.storage.project import ProjectStorage
 from doc_gen.storage.repository import ProjectRepository
@@ -112,6 +118,30 @@ class TestProjectStorage:
         path = self.storage.save_output("proj1", "final.md", "# Final doc")
         assert path.exists()
         assert path.read_text() == "# Final doc"
+
+    def test_save_and_load_design_brief(self):
+        self.storage.create_project_dirs("proj1")
+        brief = DesignBrief(
+            goal_type="systematic_guide",
+            audience_level="beginner",
+            learning_mode="standard",
+            focus_mode="balanced",
+            selected_modules=["roadmap"],
+            scope_guidance="Emphasize fundamentals",
+        )
+
+        self.storage.save_design_brief("proj1", brief)
+        loaded = self.storage.load_design_brief("proj1")
+
+        assert loaded is not None
+        assert loaded.goal_type == "systematic_guide"
+        assert loaded.selected_modules == ["roadmap"]
+        assert self.storage.has_design_brief("proj1") is True
+
+    def test_load_design_brief_missing(self):
+        self.storage.create_project_dirs("proj1")
+        assert self.storage.load_design_brief("proj1") is None
+        assert self.storage.has_design_brief("proj1") is False
 
     def test_delete_project(self):
         path = self.storage.create_project_dirs("proj1")

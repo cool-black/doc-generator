@@ -10,12 +10,15 @@ import click
 
 from doc_gen.cli.prompts import (
     prompt_audience,
+    prompt_design_brief,
+    prompt_design_brief_action,
     prompt_doc_type,
     prompt_domain,
     prompt_files,
     prompt_granularity,
     prompt_language,
     prompt_outline_action,
+    render_design_brief,
 )
 from doc_gen.config.loader import CONFIG_FILE, ensure_data_dir, load_config, save_config
 from doc_gen.config.models import AppConfig, LLMProvider
@@ -205,6 +208,8 @@ def cmd_generate(name: str, stage: str) -> None:
 
 def _generate_outline(generator: DocumentGenerator, project: ProjectConfig) -> None:
     """Handle outline generation with user interaction loop."""
+    _ensure_design_brief(generator.storage, project)
+
     while True:
         click.echo("\nGenerating outline...")
         outline_md = run_async(generator.generate_outline(project))
@@ -225,6 +230,32 @@ def _generate_outline(generator: DocumentGenerator, project: ProjectConfig) -> N
             click.echo("Regenerating...")
             continue
         else:
+            click.echo("Cancelled.")
+            raise SystemExit(0)
+
+
+def _ensure_design_brief(storage: ProjectStorage, project: ProjectConfig) -> None:
+    """Ensure a confirmed design brief exists before outline generation."""
+    existing_brief = storage.load_design_brief(project.id)
+    if existing_brief:
+        click.echo("\nExisting design brief found.")
+        click.echo(render_design_brief(existing_brief))
+        action = prompt_design_brief_action(has_existing=True)
+        if action == "reuse":
+            return
+        if action == "cancel":
+            click.echo("Cancelled.")
+            raise SystemExit(0)
+
+    while True:
+        brief = prompt_design_brief(project.domain, project.audience)
+        click.echo("\n" + render_design_brief(brief))
+        action = prompt_design_brief_action()
+        if action == "confirm":
+            storage.save_design_brief(project.id, brief)
+            click.echo("Design brief confirmed.")
+            return
+        if action == "cancel":
             click.echo("Cancelled.")
             raise SystemExit(0)
 

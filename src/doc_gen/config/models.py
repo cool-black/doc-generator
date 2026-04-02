@@ -35,7 +35,7 @@ class LLMConfig(BaseModel):
     api_key: str = ""
     model: str = ""
     base_url: str = ""
-    timeout: int = 120
+    timeout: int = 300
     max_retries: int = 3
     temperature: float = 0.7
 

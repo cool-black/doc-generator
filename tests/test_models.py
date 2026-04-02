@@ -5,6 +5,7 @@ from doc_gen.core.outline import parse_outline_markdown
 from doc_gen.models.document import ChapterResult, GenerationContext
 from doc_gen.models.outline import Outline, OutlineSection
 from doc_gen.models.project import (
+    DesignBrief,
     DocumentType,
     Granularity,
     ProjectConfig,
@@ -30,6 +31,22 @@ class TestProjectModels:
 
     def test_granularity_values(self):
         assert len(list(Granularity)) == 4
+
+    def test_design_brief_prompt_context(self):
+        brief = DesignBrief(
+            goal_type="systematic_guide",
+            audience_level="beginner",
+            learning_mode="standard",
+            focus_mode="balanced",
+            selected_modules=["roadmap", "glossary"],
+            scope_guidance="Build practical intuition first",
+            notes="Prefer short examples",
+        )
+
+        context = brief.to_prompt_context()
+        assert "Goal Type: systematic_guide" in context
+        assert "Selected Modules: roadmap, glossary" in context
+        assert "Notes: Prefer short examples" in context
 
 
 class TestOutlineModels:

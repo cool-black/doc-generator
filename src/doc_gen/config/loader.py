@@ -93,7 +93,7 @@ def _config_from_env() -> AppConfig:
         api_key=os.environ.get("LLM_API_KEY", ""),
         model=os.environ.get("LLM_MODEL", ""),
         base_url=os.environ.get("LLM_BASE_URL", "").strip(),
-        timeout=int(os.environ.get("LLM_TIMEOUT", "120")),
+        timeout=int(os.environ.get("LLM_TIMEOUT", "300")),
         temperature=float(os.environ.get("LLM_TEMPERATURE", "0.7")),
     )
     return AppConfig(llm=llm)

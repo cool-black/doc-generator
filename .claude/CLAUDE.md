@@ -18,18 +18,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DocGen is a CLI tool that generates comprehensive knowledge documents through conversational interaction. It transforms scattered sources (user uploads + web content) into structured, original documents with built-in quality assurance.
+DocGen is a CLI tool for generating structured technical tutorials, learning guides, and technical manuals through an AI-assisted workflow. It is being shaped into a focused document-production tool rather than a generic "write any knowledge document" assistant.
 
 ### Project Goal
 
-Transform the document creation workflow from hours of manual research and writing to minutes of guided conversation, producing structured, sourced, and original documents.
+Transform tutorial and learning-document creation from hours of manual outlining and drafting into a guided workflow that produces structured first drafts users can continue refining.
 
 ### Core Workflow
 
-1. **Requirement Gathering** - Interactive prompts for domain, document type, audience, granularity
-2. **Outline Generation** - AI-generated hierarchical structure with user confirmation
+1. **Requirement Gathering** - Interactive prompts for topic, audience, and generation settings
+2. **Outline Generation** - AI-generated structure with user confirmation
 3. **Content Generation** - Sequential chapter generation with context preservation
-4. **Quality Assurance** - (Post-MVP) Hallucination detection, consistency checks
+4. **Review & Recovery** - Automated review plus resume support
 5. **Export** - Markdown assembly with TOC
 
 ## Architecture Overview
@@ -93,9 +93,12 @@ python -m pytest --cov=src/doc_gen --cov-fail-under=80
 
 | Document | Purpose |
 |----------|---------|
-| [product_spec.md](../product_spec.md) | Product requirements, features, milestones |
-| [project_spec.md](../project_spec.md) | Technical architecture details, data models, API specs |
-| [PROJECT_STATUS.md](../PROJECT_STATUS.md) | Current progress, known issues, next steps |
+| [README.md](../README.md) | Project entry point and quick start |
+| [docs/DOCUMENTATION_MAP.md](../docs/DOCUMENTATION_MAP.md) | Documentation structure and responsibilities |
+| [product_spec.md](../product_spec.md) | Product scope, roadmap, and requirements |
+| [project_spec.md](../project_spec.md) | Technical architecture and extension points |
+| [PROJECT_STATUS.md](../PROJECT_STATUS.md) | Verified current status and near-term priorities |
+| [docs/PRODUCT_STRATEGY.md](../docs/PRODUCT_STRATEGY.md) | Product direction and positioning decisions |
 | [CHANGELOG.md](../CHANGELOG.md) | Feature additions and bug fixes |
 
 ## Entry Points
